@@ -1,4 +1,5 @@
-# Proyecto_AstroShieldAI
+# Proyecto_AstroShieldAI ---- prototipo funcional
+
 python -m pip install --upgrade pip
 pip install pandas numpy matplotlib seaborn plotly jupyterlab
 pip install scikit-learn xgboost imbalanced-learn optuna shap
