@@ -9,16 +9,12 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import useStats from "@/hooks/useStats";
+import ErrorState from "@/components/ui/ErrorState";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import StatCard from "@/components/ui/StatCard";
 import RiskBadge from "@/components/ui/RiskBadge";
 import GlobeView from "@/components/globe/GlobeView";
-
-const stats = [
-  { title: "Objetos monitoreados", value: "73,718", subtitle: "Catálogo activo", icon: Radar, accent: "blue" },
-  { title: "NEO peligrosos", value: "2,465", subtitle: "Requieren atención", icon: AlertTriangle, accent: "red" },
-  { title: "Objetos SATCAT", value: "36,876", subtitle: "En órbita terrestre", icon: Database, accent: "cyan" },
-  { title: "Para revisión", value: "04", subtitle: "Alertas pendientes", icon: ShieldAlert, accent: "orange" },
-];
 
 const radarObjects = [
   { name: "ISS", id: "NORAD 25544", type: "Estación espacial", risk: "BAJA" },
@@ -29,6 +25,13 @@ const radarObjects = [
 /** Renderiza la vista principal con datos mock del wireframe. */
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useStats();
+  const statCards = stats ? [
+    { title: "Objetos monitoreados", value: stats.total_neos, subtitle: "Catálogo NEO activo", icon: Radar, accent: "blue" },
+    { title: "NEO peligrosos", value: stats.hazardous_count, subtitle: "Requieren atención", icon: AlertTriangle, accent: "red" },
+    { title: "Diámetro medio", value: `${Number(stats.avg_diameter_km).toFixed(2)} km`, subtitle: "Promedio de objetos", icon: Database, accent: "cyan" },
+    { title: "Velocidad media", value: `${Math.round(stats.avg_velocity_kmh).toLocaleString("es-ES")} km/h`, subtitle: `Más cercano: ${Math.round(stats.closest_approach_km).toLocaleString("es-ES")} km`, icon: ShieldAlert, accent: "orange" },
+  ] : [];
 
   /** Renderiza los accesos rápidos definidos por el diseño aprobado. */
   const quickLinks = [
@@ -44,9 +47,11 @@ export default function Dashboard() {
         <h1 className="mt-2 text-3xl font-semibold text-astro-text sm:text-4xl">Resumen orbital</h1>
         <p className="mt-2 text-sm text-astro-muted">Monitoreo inteligente de objetos cercanos a la Tierra.</p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => <StatCard key={stat.title} {...stat} />)}
-      </div>
+      {statsLoading && <LoadingSpinner label="Cargando indicadores..." />}
+      {statsError && !statsLoading && <ErrorState onRetry={refetchStats} />}
+      {stats && !statsLoading && !statsError && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {statCards.map((stat) => <StatCard key={stat.title} {...stat} />)}
+      </div>}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
         <section className="overflow-hidden rounded-xl border border-astro-card bg-astro-card">
           <div className="flex items-center justify-between border-b border-astro-bg px-5 py-4">
