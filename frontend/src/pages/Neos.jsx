@@ -1,12 +1,11 @@
-/** Tabla paginada de asteroides. */
-import { useEffect, useState } from "react";
-import { api } from "../services/api";
-
-export function Neos() {
-  /** Obtiene la primera página del catálogo. */
-  const [items, setItems] = useState([]);
-  useEffect(() => { api.get("/neos").then(({ data }) => setItems(data.items)); }, []);
-  return <section><h1>NEO catalog</h1><table><thead><tr><th>Name</th><th>Velocity</th><th>Miss distance</th><th>Hazardous</th></tr></thead>
-    <tbody>{items.map((neo) => <tr key={neo.id}><td>{neo.name}</td><td>{neo.relative_velocity}</td><td>{neo.miss_distance}</td><td>{neo.is_hazardous ? "YES" : "NO"}</td></tr>)}</tbody>
-  </table></section>;
+/** Placeholder funcional del catálogo NEO del Sprint 3. */
+export default function Neos() {
+  /** Renderiza la pantalla NEO pendiente de datos reales. */
+  return (
+    <section className="mx-auto max-w-4xl rounded-xl border border-astro-card bg-astro-card p-8">
+      <p className="text-sm font-semibold uppercase tracking-widest text-astro-cyan">Sprint 3</p>
+      <h1 className="mt-3 text-3xl font-semibold text-astro-text">Objetos NEO</h1>
+      <p className="mt-3 text-sm text-astro-muted">En construcción — Sprint 3.</p>
+    </section>
+  );
 }
