@@ -10,7 +10,7 @@ export default function ObjectDetailsPanel({ object }) {
     );
   }
 
-  const orbit = object.type === "NEO" ? "HEO" : object.id === "25544" ? "LEO" : "GEO";
+  const orbit = object.type === "NEO" ? "HEO" : object.id === "ISS" ? "LEO" : "GEO";
   const inclination = `${(Math.abs(object.lat) * 0.72 + 2.4).toFixed(1)}°`;
   const apogee = `${Math.round(420 + object.altitude * 42000).toLocaleString("es-ES")} km`;
   const perigee = `${Math.round(360 + object.altitude * 18000).toLocaleString("es-ES")} km`;

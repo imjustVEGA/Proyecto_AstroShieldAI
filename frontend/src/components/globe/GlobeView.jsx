@@ -4,18 +4,6 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ZoomControls from "@/components/ui/ZoomControls";
 import { GLOBE_PALETTE, MOCK_GLOBE_OBJECTS, ORBIT_LINES } from "@/utils/constants";
 
-/** Convierte cada órbita en segmentos compatibles con los arcos del globo. */
-function orbitSegments() {
-  return ORBIT_LINES.flatMap((orbit) =>
-    orbit.coordinates.slice(0, -1).map((point, index) => ({
-      startLat: point.lat,
-      startLng: point.lng,
-      endLat: orbit.coordinates[index + 1].lat,
-      endLng: orbit.coordinates[index + 1].lng,
-    })),
-  );
-}
-
 /** Renderiza el globo interactivo con objetos, órbitas y alertas. */
 export default function GlobeView({ onObjectSelect }) {
   const globeRef = useRef(null);
@@ -24,7 +12,7 @@ export default function GlobeView({ onObjectSelect }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const pointsData = useMemo(() => MOCK_GLOBE_OBJECTS, []);
-  const arcsData = useMemo(orbitSegments, []);
+  const arcsData = useMemo(() => ORBIT_LINES, []);
   const ringsData = useMemo(
     () => pointsData.filter((object) => object.type === "NEO" && object.hazardous),
     [pointsData],

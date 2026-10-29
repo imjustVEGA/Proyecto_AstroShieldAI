@@ -8,8 +8,10 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import StatCard from "@/components/ui/StatCard";
 import RiskBadge from "@/components/ui/RiskBadge";
+import GlobeView from "@/components/globe/GlobeView";
 
 const stats = [
   { title: "Objetos monitoreados", value: "73,718", subtitle: "Catálogo activo", icon: Radar, accent: "blue" },
@@ -26,6 +28,8 @@ const radarObjects = [
 
 /** Renderiza la vista principal con datos mock del wireframe. */
 export default function Dashboard() {
+  const navigate = useNavigate();
+
   /** Renderiza los accesos rápidos definidos por el diseño aprobado. */
   const quickLinks = [
     { label: "Explorar SATCAT", path: "/satcat", icon: Database },
@@ -52,13 +56,7 @@ export default function Dashboard() {
             </div>
             <Globe className="text-astro-cyan" size={21} />
           </div>
-          <div className="grid min-h-[310px] place-items-center bg-[radial-gradient(circle_at_center,_#141B2E_0%,_#0B1020_70%)] p-8">
-            <div className="text-center">
-              <Globe className="mx-auto text-astro-blue" size={74} strokeWidth={1} />
-              <p className="mt-4 text-sm font-medium text-astro-text">Cargando globo 3D...</p>
-              <p className="mt-1 text-xs text-astro-muted">La visualización orbital estará disponible en el Sprint 2.</p>
-            </div>
-          </div>
+          <GlobeView onObjectSelect={(object) => navigate(`/explorer?object=${object.id}`)} />
         </section>
         <section className="rounded-xl border border-astro-card bg-astro-card p-5">
           <div className="flex items-center justify-between">

@@ -29,7 +29,7 @@ export const GLOBE_PALETTE = {
 };
 
 const REAL_GLOBE_OBJECTS = [
-  { id: "25544", name: "ISS (ZARYA)", lat: 51.6, lng: -0.1, altitude: 0.18, hazardous: false, type: "SATCAT" },
+  { id: "ISS", name: "ISS (ZARYA)", lat: 51.6, lng: -0.1, altitude: 0.18, hazardous: false, type: "SATCAT" },
   { id: "99942", name: "Apophis", lat: 12.4, lng: 42.8, altitude: 0.42, hazardous: true, type: "NEO" },
   { id: "101955", name: "Bennu", lat: -8.3, lng: 128.1, altitude: 0.36, hazardous: true, type: "NEO" },
   { id: "1566", name: "Icarus", lat: 34.2, lng: -112.7, altitude: 0.49, hazardous: true, type: "NEO" },
@@ -51,20 +51,22 @@ const GENERATED_GLOBE_OBJECTS = Array.from({ length: 1200 }, (_, index) => {
 
 export const MOCK_GLOBE_OBJECTS = [...REAL_GLOBE_OBJECTS, ...GENERATED_GLOBE_OBJECTS];
 
-const createOrbit = (radius, tilt, phase = 0) =>
-  Array.from({ length: 73 }, (_, index) => {
-    const angle = (index / 72) * Math.PI * 2 + phase;
-    return {
-      lat: Math.sin(angle) * tilt,
-      lng: ((Math.cos(angle) * radius + 180) % 360) - 180,
-    };
-  });
+const createOrbit = (radius, tilt, phase = 0) => {
+  const startAngle = phase;
+  const endAngle = phase + Math.PI;
+  return {
+    startLat: Math.sin(startAngle) * tilt,
+    startLng: Math.cos(startAngle) * radius,
+    endLat: Math.sin(endAngle) * tilt,
+    endLng: Math.cos(endAngle) * radius,
+  };
+};
 
 export const ORBIT_LINES = [
-  { name: "LEO", coordinates: createOrbit(55, 25) },
-  { name: "MEO", coordinates: createOrbit(70, 45, 0.4) },
-  { name: "GEO", coordinates: createOrbit(180, 0, 0.8) },
-  { name: "HEO", coordinates: createOrbit(145, 62, 1.2) },
-  { name: "Polar", coordinates: createOrbit(90, 82, 1.8) },
-  { name: "NEO", coordinates: createOrbit(135, 35, 2.4) },
+  { name: "LEO", ...createOrbit(55, 25) },
+  { name: "MEO", ...createOrbit(70, 45, 0.4) },
+  { name: "GEO", ...createOrbit(180, 0, 0.8) },
+  { name: "HEO", ...createOrbit(145, 62, 1.2) },
+  { name: "Polar", ...createOrbit(90, 82, 1.8) },
+  { name: "NEO", ...createOrbit(135, 35, 2.4) },
 ];
