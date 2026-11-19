@@ -48,7 +48,7 @@ export default function Dashboard() {
         <p className="mt-2 text-sm text-astro-muted">Monitoreo inteligente de objetos cercanos a la Tierra.</p>
       </div>
       {statsLoading && <LoadingSpinner label="Cargando indicadores..." />}
-      {statsError && !statsLoading && <ErrorState onRetry={refetchStats} />}
+      {statsError && !statsLoading && <ErrorState error={statsError} onRetry={refetchStats} />}
       {stats && !statsLoading && !statsError && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map((stat) => <StatCard key={stat.title} {...stat} />)}
       </div>}
@@ -57,11 +57,11 @@ export default function Dashboard() {
           <div className="flex items-center justify-between border-b border-astro-bg px-5 py-4">
             <div>
               <h2 className="font-semibold text-astro-text">Mapa orbital</h2>
-              <p className="mt-1 text-xs text-astro-muted">Visualización en tiempo real</p>
+              <p className="mt-1 text-xs text-astro-muted">Catálogos reales · posiciones aproximadas</p>
             </div>
             <Globe className="text-astro-cyan" size={21} />
           </div>
-          <GlobeView onObjectSelect={(object) => navigate(`/explorer?object=${object.id}`)} />
+          <GlobeView onObjectSelect={(object) => navigate(`/explorer?object=${encodeURIComponent(object.key)}`)} />
         </section>
         <section className="rounded-xl border border-astro-card bg-astro-card p-5">
           <div className="flex items-center justify-between">

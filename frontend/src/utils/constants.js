@@ -29,29 +29,6 @@ export const GLOBE_PALETTE = {
   safe: "#22D3EE",
 };
 
-const REAL_GLOBE_OBJECTS = [
-  { id: "ISS", name: "ISS (ZARYA)", lat: 51.6, lng: -0.1, altitude: 0.18, hazardous: false, type: "SATCAT" },
-  { id: "99942", name: "Apophis", lat: 12.4, lng: 42.8, altitude: 0.42, hazardous: true, type: "NEO" },
-  { id: "101955", name: "Bennu", lat: -8.3, lng: 128.1, altitude: 0.36, hazardous: true, type: "NEO" },
-  { id: "1566", name: "Icarus", lat: 34.2, lng: -112.7, altitude: 0.49, hazardous: true, type: "NEO" },
-];
-
-const GENERATED_GLOBE_OBJECTS = Array.from({ length: 1200 }, (_, index) => {
-  const isNeo = index % 5 === 0;
-  const hazardous = isNeo && index % 3 === 0;
-  return {
-    id: `${100000 + index}`,
-    name: isNeo ? `NEO-${String(index + 1).padStart(4, "0")}` : `SATCAT-${String(index + 1).padStart(4, "0")}`,
-    lat: Math.sin(index * 2.17) * 78,
-    lng: ((index * 137.5 + 21) % 360) - 180,
-    altitude: 0.1 + ((index * 17) % 51) / 100,
-    hazardous,
-    type: isNeo ? "NEO" : "SATCAT",
-  };
-});
-
-export const MOCK_GLOBE_OBJECTS = [...REAL_GLOBE_OBJECTS, ...GENERATED_GLOBE_OBJECTS];
-
 const createOrbit = (radius, tilt, phase = 0) => {
   const startAngle = phase;
   const endAngle = phase + Math.PI;
