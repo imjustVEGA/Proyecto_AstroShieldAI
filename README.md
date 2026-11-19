@@ -4,28 +4,45 @@ MVP con FastAPI, RandomForest, IsolationForest y React para monitorear NEOs de
 NASA CNEOS. El proyecto no incluye datos inventados: descarga el CSV oficial y
 guárdalo como `backend/data/neos.csv`.
 
-## Backend
+## Backend (PowerShell, terminal 1)
 
 ```powershell
-py -3.11 -m venv .venv
-.venv\Scripts\pip install -r backend\requirements.txt
-python -m backend.train
-uvicorn backend.app.main:app --reload
+python -m venv backend\venv
+& backend\venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+& backend\venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-La API expone `GET /health`, `GET /neos`, `POST /predict` y `GET /stats`.
+Deja esta terminal abierta mientras uses la aplicación. La API expone
+`POST /token`, `GET /users/`, `GET /satcat` y `GET /stats`, entre otros endpoints.
 El request de `/predict` usa exactamente las cinco features numéricas definidas
 en el contrato del MVP.
 
-## Frontend
+## Credenciales de prueba
+
+Al iniciar el backend se crea automáticamente una cuenta de administrador si
+todavía no existe:
+
+- **Email / usuario:** `admin@astroshield.com` (también puedes ingresar `admin`)
+- **Contraseña:** `admin123`
+- **Rol:** administrador
+
+Estas credenciales son únicamente para desarrollo local. Antes de desplegar,
+configura `ASTROSHIELD_ADMIN_EMAIL`, `ASTROSHIELD_ADMIN_USERNAME`,
+`ASTROSHIELD_ADMIN_PASSWORD` y `ASTROSHIELD_JWT_SECRET` con valores seguros.
+
+## Frontend (PowerShell, terminal 2)
 
 ```powershell
-cd frontend
+Set-Location frontend
 npm install
+$env:VITE_API_URL = "http://127.0.0.1:8000"
 npm run dev
 ```
 
-Configura `VITE_API_URL` si la API no está en `http://localhost:8000`.
+Abre la URL que muestre Vite (normalmente `http://localhost:5173`). CORS permite
+ese origen y `http://127.0.0.1:5173`; Axios conecta con la API en
+`http://127.0.0.1:8000`. Si cambias `VITE_API_URL`, reinicia Vite para aplicar
+el cambio.
 
 ASTROSHIELD AI
 

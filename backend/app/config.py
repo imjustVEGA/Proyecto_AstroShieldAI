@@ -17,14 +17,20 @@ DATABASE_URL = os.environ.get(
 JWT_SECRET = os.environ.get("ASTROSHIELD_JWT_SECRET") or token_urlsafe(48)
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_MINUTES = 30
-CORS_ORIGINS = [
-    origin.strip()
-    for origin in os.environ.get(
-        "ASTROSHIELD_CORS_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173",
-    ).split(",")
-    if origin.strip()
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
+CORS_ORIGINS = list(
+    dict.fromkeys(
+        DEFAULT_CORS_ORIGINS
+        + [
+            origin.strip()
+            for origin in os.environ.get("ASTROSHIELD_CORS_ORIGINS", "").split(",")
+            if origin.strip()
+        ]
+    )
+)
 ADMIN_EMAIL = os.environ.get("ASTROSHIELD_ADMIN_EMAIL", "admin@astroshield.com")
 ADMIN_USERNAME = os.environ.get("ASTROSHIELD_ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ASTROSHIELD_ADMIN_PASSWORD", "admin123")

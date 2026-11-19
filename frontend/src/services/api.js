@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
+  baseURL: import.meta.env.VITE_API_URL || "http://127.0.0.1:8000",
   timeout: 10000,
 });
 
@@ -26,7 +26,7 @@ api.interceptors.response.use(
       || (Array.isArray(detail) && detail.map((item) => item.msg).filter(Boolean).join(". "))
       || (error.code === "ECONNABORTED"
         ? "La solicitud tardó demasiado."
-        : "No se pudo conectar con el servicio.");
+        : "No se pudo conectar con FastAPI. Verifica que Uvicorn esté activo en http://127.0.0.1:8000 y que VITE_API_URL apunte a esa dirección.");
     return Promise.reject(error);
   },
 );
