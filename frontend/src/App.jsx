@@ -11,6 +11,8 @@ import Login from "@/pages/Login";
 import Simulacion from "@/pages/Simulacion";
 import Reportes from "@/pages/Reportes";
 import Configuracion from "@/pages/Configuracion";
+import Usuarios from "@/pages/Usuarios";
+import AdminRoute from "@/components/AdminRoute";
 
 function NotFound() {
   /** Renderiza la vista para rutas desconocidas. */
@@ -45,6 +47,9 @@ export default function App() {
           <Route path="simulacion" element={<Simulacion />} />
           <Route path="reportes" element={<Reportes />} />
           <Route path="configuracion" element={<Configuracion />} />
+          <Route element={<AdminRoute />}>
+            <Route path="usuarios" element={<Usuarios />} />
+          </Route>
           <Route path="404" element={<NotFound />} />
           <Route path="*" element={<Navigate replace to="/404" />} />
         </Route>

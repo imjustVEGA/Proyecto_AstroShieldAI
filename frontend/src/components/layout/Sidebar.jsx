@@ -7,11 +7,13 @@ import {
   Orbit,
   Radar,
   Settings,
+  Users,
   X,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import { NAV_ITEMS } from "@/utils/constants";
+import { useAuth } from "@/context/AuthContext";
 
 const icons = {
   dashboard: LayoutDashboard,
@@ -22,10 +24,12 @@ const icons = {
   simulation: Activity,
   reports: Radar,
   settings: Settings,
+  users: Users,
 };
 
 /** Renderiza la navegación lateral responsive. */
 export default function Sidebar({ isOpen, onClose }) {
+  const { user } = useAuth();
   /** Cierra el menú después de navegar en pantallas pequeñas. */
   const handleNavigation = () => {
     if (onClose) onClose();
@@ -73,7 +77,7 @@ export default function Sidebar({ isOpen, onClose }) {
           Mission control
         </p>
         <nav aria-label="Navegación principal" className="space-y-1">
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.filter((item) => !item.adminOnly || user?.role === "admin").map((item) => {
             const Icon = icons[item.icon];
             if (item.disabled) {
               return (

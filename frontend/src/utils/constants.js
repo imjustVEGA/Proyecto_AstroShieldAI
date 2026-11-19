@@ -14,6 +14,7 @@ export const NAV_ITEMS = [
   { label: "Simulación orbital", path: "/simulacion", icon: "simulation" },
   { label: "Reportes", path: "/reportes", icon: "reports" },
   { label: "Configuración", path: "/configuracion", icon: "settings" },
+  { label: "Usuarios", path: "/usuarios", icon: "users", adminOnly: true },
 ];
 
 export const AI_TRANSPARENCY_NOTE =
