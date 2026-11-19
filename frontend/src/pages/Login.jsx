@@ -33,8 +33,8 @@ export default function Login() {
       const { data } = await api.post("/token", body, {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
-      login(data.access_token, username.trim());
-      toast.success("Sesión iniciada con éxito");
+      login(data.access_token, data.user);
+      toast.success("Bienvenido");
       navigate(location.state?.from?.pathname || "/", { replace: true });
     } catch (error) {
       toast.error(error.userMessage || "Credenciales incorrectas");
@@ -73,7 +73,7 @@ export default function Login() {
           <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
             <div>
               <label className="text-sm font-medium" htmlFor="username">Usuario</label>
-              <input id="username" autoComplete="username" className="mt-2 w-full rounded-lg border border-astro-card bg-astro-bg px-4 py-3 outline-none transition focus:border-astro-cyan" placeholder="admin" {...register("username")} />
+              <input id="username" autoComplete="username" className="mt-2 w-full rounded-lg border border-astro-card bg-astro-bg px-4 py-3 outline-none transition focus:border-astro-cyan" placeholder="admin@astroshield.com" {...register("username")} />
               {errors.username && <p className="mt-2 text-xs text-astro-orange">{errors.username.message}</p>}
             </div>
             <div>

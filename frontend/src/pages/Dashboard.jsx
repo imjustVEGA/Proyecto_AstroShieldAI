@@ -27,10 +27,10 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useStats();
   const statCards = stats ? [
-    { title: "Objetos monitoreados", value: stats.total_neos, subtitle: "Catálogo NEO activo", icon: Radar, accent: "blue" },
-    { title: "NEO peligrosos", value: stats.hazardous_count, subtitle: "Requieren atención", icon: AlertTriangle, accent: "red" },
-    { title: "Diámetro medio", value: `${Number(stats.avg_diameter_km).toFixed(2)} km`, subtitle: "Promedio de objetos", icon: Database, accent: "cyan" },
-    { title: "Velocidad media", value: `${Math.round(stats.avg_velocity_kmh).toLocaleString("es-ES")} km/h`, subtitle: `Más cercano: ${Math.round(stats.closest_approach_km).toLocaleString("es-ES")} km`, icon: ShieldAlert, accent: "orange" },
+    { title: "Objetos catalogados", value: stats.total_objects, subtitle: "Registros en SATCAT", icon: Radar, accent: "blue" },
+    { title: "Objetos activos", value: stats.active_objects, subtitle: "Estado activo", icon: AlertTriangle, accent: "red" },
+    { title: "Apogeo medio", value: `${Number(stats.average_apogee_km).toLocaleString("es-ES")} km`, subtitle: "Promedio SATCAT", icon: Database, accent: "cyan" },
+    { title: "Inclinación media", value: `${Number(stats.average_inclination_deg).toFixed(2)}°`, subtitle: `Perigeo medio: ${Number(stats.average_perigee_km).toLocaleString("es-ES")} km`, icon: ShieldAlert, accent: "orange" },
   ] : [];
 
   /** Renderiza los accesos rápidos definidos por el diseño aprobado. */

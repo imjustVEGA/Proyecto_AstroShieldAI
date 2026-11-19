@@ -5,20 +5,30 @@ const TOKEN_KEY = "astroshield_token";
 const USER_KEY = "astroshield_user";
 
 function readToken() {
-  const token = sessionStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
   if (!token) return null;
   try {
     const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
     if (!payload.exp || payload.exp * 1000 <= Date.now()) {
-      sessionStorage.removeItem(TOKEN_KEY);
-      sessionStorage.removeItem(USER_KEY);
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
       return null;
     }
     return token;
   } catch {
-    sessionStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     return null;
+  }
+}
+
+function getTokenExpiry(token) {
+  try {
+    const encodedPayload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(encodedPayload));
+    return payload.exp ? payload.exp * 1000 : 0;
+  } catch {
+    return 0;
   }
 }
 
@@ -26,15 +36,15 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(readToken);
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(sessionStorage.getItem(USER_KEY));
+      return JSON.parse(localStorage.getItem(USER_KEY));
     } catch {
       return null;
     }
   });
 
   const logout = useCallback(() => {
-    sessionStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     setToken(null);
     setUser(null);
   }, []);
@@ -45,11 +55,22 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("astroshield:logout", handleLogout);
   }, [logout]);
 
-  const login = useCallback((accessToken, username) => {
-    sessionStorage.setItem(TOKEN_KEY, accessToken);
-    sessionStorage.setItem(USER_KEY, JSON.stringify({ username }));
+  useEffect(() => {
+    if (!token) return undefined;
+    const expiresIn = getTokenExpiry(token) - Date.now();
+    if (expiresIn <= 0) {
+      logout();
+      return undefined;
+    }
+    const timeout = window.setTimeout(logout, expiresIn);
+    return () => window.clearTimeout(timeout);
+  }, [token, logout]);
+
+  const login = useCallback((accessToken, userData) => {
+    localStorage.setItem(TOKEN_KEY, accessToken);
+    localStorage.setItem(USER_KEY, JSON.stringify(userData));
     setToken(accessToken);
-    setUser({ username });
+    setUser(userData);
   }, []);
 
   const value = useMemo(
