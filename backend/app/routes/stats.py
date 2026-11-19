@@ -1,32 +1,28 @@
-"""Endpoint de métricas agregadas."""
+"""Indicadores agregados (compatibilidad con la versión anterior de FER)."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
+from backend.app.astro import service, store
 from backend.app.auth import get_current_user
-from backend.app.routes.satcat import load_satcat
 
-router = APIRouter()
+router = APIRouter(tags=["dashboard"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/stats")
-def stats(_: dict = Depends(get_current_user)) -> dict[str, object]:
-    """Calcula métricas del catálogo SATCAT."""
-    try:
-        frame = load_satcat()
-    except (FileNotFoundError, ValueError) as error:
-        raise HTTPException(status_code=503, detail=str(error)) from error
-    numeric = frame.select_dtypes(include="number")
-    active = frame["status"].astype(str).str.casefold().eq("activo")
+def stats() -> dict[str, object]:
+    """Métricas del catálogo SATCAT real."""
+    frame = store.satcat_objects()
+    alive = frame[~frame["is_decayed"]]
     return {
         "total_objects": int(len(frame)),
-        "active_objects": int(active.sum()),
-        "average_apogee_km": round(float(numeric["apogee"].mean()), 2)
-        if "apogee" in numeric and len(frame)
-        else 0,
-        "average_perigee_km": round(float(numeric["perigee"].mean()), 2)
-        if "perigee" in numeric and len(frame)
-        else 0,
-        "average_inclination_deg": round(float(numeric["inclination"].mean()), 2)
-        if "inclination" in numeric and len(frame)
-        else 0,
+        "active_objects": int(frame["is_active"].sum()),
+        "in_orbit": int(len(alive)),
+        "average_apogee_km": round(float(alive["apogee_km"].mean()), 2),
+        "average_perigee_km": round(float(alive["perigee_km"].mean()), 2),
+        "average_inclination_deg": round(float(alive["inclination_deg"].mean()), 2),
     }
+
+
+@router.get("/dashboard/summary", summary="Indicadores generales del dashboard")
+def dashboard_summary() -> dict:
+    return service.dashboard_summary()

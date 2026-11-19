@@ -1,125 +1,122 @@
-/** Sidebar con navegación principal y estados disabled. */
+/** Navegación lateral con secciones (Workspace / Laboratorio / Sistema). */
 import {
   Activity,
-  AlertTriangle,
-  Globe,
-  LayoutDashboard,
-  Orbit,
-  Radar,
+  BarChart3,
+  Database,
+  FileText,
+  Globe2,
+  LayoutGrid,
+  Satellite,
   Settings,
+  Shield,
+  ShieldAlert,
   Users,
   X,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import { motion } from "framer-motion";
+import { Telescope } from "@/components/icons";
+import { Link, NavLink } from "react-router-dom";
 import { NAV_ITEMS } from "@/utils/constants";
 import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/utils/cn";
 
 const icons = {
-  dashboard: LayoutDashboard,
-  explorer: Globe,
-  neos: Orbit,
-  satcat: Radar,
-  risks: AlertTriangle,
+  dashboard: LayoutGrid,
+  explorer: Globe2,
+  neos: Telescope,
+  satcat: Satellite,
+  risks: ShieldAlert,
+  statistics: BarChart3,
   simulation: Activity,
-  reports: Radar,
+  reports: FileText,
+  data: Database,
   settings: Settings,
   users: Users,
 };
 
-/** Renderiza la navegación lateral responsive. */
-export default function Sidebar({ isOpen, onClose }) {
+function Brand({ onNavigate }) {
+  return (
+    <Link to="/" onClick={onNavigate} className="flex items-center gap-2.5 px-5 pb-6 pt-5">
+      <span className="relative grid size-9 place-items-center rounded-full border border-primary/40 bg-primary/10">
+        <Shield className="size-[18px] text-blue-300" strokeWidth={1.8} />
+      </span>
+      <span className="leading-tight">
+        <span className="block text-[17px] font-bold tracking-tight">
+          AstroShield<sup className="ml-0.5 text-[9px] font-semibold text-primary">AI</sup>
+        </span>
+        <span className="block text-[7.5px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Space intelligence platform</span>
+      </span>
+    </Link>
+  );
+}
+
+function SidebarContent({ onNavigate }) {
   const { user } = useAuth();
-  /** Cierra el menú después de navegar en pantallas pequeñas. */
-  const handleNavigation = () => {
-    if (onClose) onClose();
-  };
+  const items = NAV_ITEMS.filter((item) => !item.adminOnly || user?.role === "admin");
+  const sections = [...new Set(items.map((i) => i.section))];
+  const initials = (user?.username || "AS").slice(0, 2).toUpperCase();
 
   return (
+    <div className="flex h-full flex-col">
+      <Brand onNavigate={onNavigate} />
+      <div className="flex-1 overflow-y-auto scrollbar-dark">
+        {sections.map((section) => (
+          <div key={section} className="mb-3">
+            <p className="eyebrow px-6 pb-2">{section}</p>
+            <nav aria-label={section} className="flex flex-col gap-1 px-3">
+              {items.filter((i) => i.section === section).map(({ path, label, icon }) => {
+                const Icon = icons[icon];
+                return (
+                  <NavLink key={path} to={path} end={path === "/"} onClick={onNavigate}
+                    className={({ isActive }) => cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-[12.5px] text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground",
+                      isActive && "bg-secondary text-foreground",
+                    )}>
+                    {({ isActive }) => (
+                      <>
+                        <Icon className={cn("size-4", isActive && "text-blue-300")} strokeWidth={1.7} />
+                        <span className="flex-1">{label}</span>
+                        {isActive && <span className="size-1.5 rounded-full bg-primary" aria-hidden />}
+                      </>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </div>
+        ))}
+      </div>
+      <div className="px-6 pb-3 text-[10px] text-muted-foreground">
+        <span className="mr-1.5 inline-block size-1.5 rounded-full bg-primary align-middle" /> Prototipo académico
+      </div>
+      <div className="m-3 mt-0 flex items-center gap-3 rounded-lg border bg-card/60 p-3">
+        <span className="grid size-8 place-items-center rounded-full border border-primary/40 bg-primary/10 text-[10px] font-semibold text-blue-200">{initials}</span>
+        <span className="min-w-0 leading-tight">
+          <span className="block truncate text-[12px] font-semibold">{user?.username ?? "AstroShield AI"}</span>
+          <span className="block truncate text-[10px] text-muted-foreground">
+            {user?.role === "admin" ? "Administrador" : "Usuario"} · v2.0
+          </span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export default function Sidebar({ isOpen, onClose }) {
+  return (
     <>
-      {isOpen && (
-        <button
-          aria-label="Cerrar navegación"
-          className="fixed inset-0 z-30 bg-astro-bg/80 lg:hidden"
-          onClick={onClose}
-          type="button"
-        />
-      )}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-astro-card bg-astro-bg px-4 py-5 transition-transform lg:static lg:z-auto lg:translate-x-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between px-3">
-          <NavLink className="flex items-center gap-3" onClick={handleNavigation} to="/">
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-astro-blue text-astro-text">
-              <Orbit size={23} />
-            </span>
-            <span>
-              <span className="block text-sm font-bold tracking-widest text-astro-text">
-                ASTROSHIELD
-              </span>
-              <span className="block text-xs font-semibold tracking-widest text-astro-cyan">
-                AI MONITORING
-              </span>
-            </span>
-          </NavLink>
-          <button
-            aria-label="Cerrar menú"
-            className="text-astro-muted lg:hidden"
-            onClick={onClose}
-            type="button"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <p className="mb-3 mt-10 px-3 text-xs font-semibold uppercase tracking-widest text-astro-muted">
-          Mission control
-        </p>
-        <nav aria-label="Navegación principal" className="space-y-1">
-          {NAV_ITEMS.filter((item) => !item.adminOnly || user?.role === "admin").map((item) => {
-            const Icon = icons[item.icon];
-            if (item.disabled) {
-              return (
-                <span
-                  className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-3 text-sm text-astro-muted/50"
-                  key={item.label}
-                >
-                  <Icon size={18} />
-                  {item.label}
-                  <span className="ml-auto text-[10px] uppercase">Pronto</span>
-                </span>
-              );
-            }
-            return (
-              <motion.div key={item.label} whileHover={{ x: 3 }} transition={{ duration: 0.16 }}>
-                <NavLink
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition ${
-                      isActive
-                        ? "bg-astro-blue/15 font-semibold text-astro-cyan"
-                        : "text-astro-muted hover:bg-astro-card hover:text-astro-text"
-                    }`
-                  }
-                  end={item.path === "/"}
-                  onClick={handleNavigation}
-                  to={item.path}
-                >
-                  <Icon size={18} />
-                  {item.label}
-                </NavLink>
-              </motion.div>
-            );
-          })}
-        </nav>
-        <div className="mt-auto rounded-lg border border-astro-card bg-astro-card/60 p-4">
-          <p className="text-xs font-semibold text-astro-text">Estado del sistema</p>
-          <p className="mt-2 flex items-center gap-2 text-xs text-astro-muted">
-            <span className="h-2 w-2 rounded-full bg-astro-cyan" />
-            Servicios operativos
-          </p>
-        </div>
+      <aside className="hidden w-60 shrink-0 border-r bg-sidebar lg:block">
+        <SidebarContent onNavigate={() => undefined} />
       </aside>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 bg-background/80 lg:hidden" onClick={onClose}>
+          <aside className="relative h-full w-64 border-r bg-sidebar" onClick={(e) => e.stopPropagation()}>
+            <button type="button" aria-label="Cerrar menú" onClick={onClose} className="absolute right-3 top-5 text-muted-foreground">
+              <X className="size-5" />
+            </button>
+            <SidebarContent onNavigate={onClose} />
+          </aside>
+        </div>
+      )}
     </>
   );
 }

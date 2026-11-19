@@ -1,62 +1,43 @@
-"""Endpoint protegido para el catálogo SATCAT."""
+"""Catálogo SATCAT real (CelesTrak): lista con filtros, estadísticas y ficha."""
 
-from functools import lru_cache
+from typing import Annotated
 
-import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
+from backend.app.astro import service
 from backend.app.auth import get_current_user
-from backend.app.config import SATCAT_DATA_PATH
 
-router = APIRouter(tags=["satcat"])
-
-REQUIRED_COLUMNS = {"norad", "name", "type", "orbit", "status"}
+router = APIRouter(prefix="/satcat", tags=["SATCAT"], dependencies=[Depends(get_current_user)])
 
 
-@lru_cache(maxsize=1)
-def load_satcat() -> pd.DataFrame:
-    if not SATCAT_DATA_PATH.exists():
-        raise FileNotFoundError(
-            f"No se encontró el catálogo SATCAT en {SATCAT_DATA_PATH}"
-        )
-    frame = pd.read_csv(SATCAT_DATA_PATH, encoding="utf-8-sig")
-    missing = REQUIRED_COLUMNS.difference(frame.columns)
-    if missing:
-        raise ValueError(f"Faltan columnas requeridas en satcat.csv: {sorted(missing)}")
-    numeric_columns = {"apogee", "perigee", "inclination", "launch_year"}
-    for column in numeric_columns.intersection(frame.columns):
-        frame[column] = pd.to_numeric(frame[column], errors="coerce").fillna(0)
-    return frame
-
-
-@router.get("/satcat")
+@router.get("", summary="Listar objetos artificiales")
 def list_satcat(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(25, ge=1, le=100),
-    _: dict = Depends(get_current_user),
-) -> dict[str, object]:
-    try:
-        frame = load_satcat()
-    except (FileNotFoundError, ValueError) as error:
-        raise HTTPException(status_code=503, detail=str(error)) from error
+    q: Annotated[str | None, Query(max_length=64, description="Nombre, designación o NORAD")] = None,
+    object_type: Annotated[list[str] | None, Query(description="PAY, R/B, DEB, UNK (repetible)")] = None,
+    owner: Annotated[str | None, Query(max_length=16)] = None,
+    state: Annotated[str, Query(pattern="^(all|in_orbit|decayed)$")] = "all",
+    ops_status: Annotated[str | None, Query(max_length=1)] = None,
+    orbit_class: Annotated[str | None, Query(pattern="^(LEO|MEO|GEO|HEO)$")] = None,
+    incomplete_only: bool = False,
+    sort: str = "norad_cat_id",
+    order: Annotated[str, Query(pattern="^(asc|desc)$")] = "asc",
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=200)] = 25,
+) -> dict:
+    return service.satcat_list(q=q, object_type=object_type, owner=owner, state=state, ops_status=ops_status,
+                               orbit_class=orbit_class, incomplete_only=incomplete_only, sort=sort, order=order,
+                               page=page, page_size=page_size)
 
-    start = (page - 1) * page_size
-    records = (
-        frame.iloc[start : start + page_size]
-        .where(frame.notna(), None)
-        .to_dict(orient="records")
-    )
-    numeric_frame = frame.select_dtypes(include="number")
-    statistics = {
-        column: round(float(numeric_frame[column].mean()), 2)
-        for column in numeric_frame.columns
-        if numeric_frame[column].count()
-    }
-    return {
-        "items": records,
-        "page": page,
-        "page_size": page_size,
-        "total": int(len(frame)),
-        "pages": (len(frame) + page_size - 1) // page_size,
-        "statistics": statistics,
-    }
+
+# Debe declararse antes de /{norad_id} para que "statistics" no se lea como id.
+@router.get("/statistics", summary="Estadísticas del catálogo")
+def satcat_statistics() -> dict:
+    return service.satcat_statistics()
+
+
+@router.get("/{norad_id}", summary="Ficha por NORAD_CAT_ID")
+def satcat_detail(norad_id: Annotated[int, Path(gt=0)]) -> dict:
+    detail = service.satcat_detail(norad_id)
+    if detail is None:
+        raise HTTPException(status_code=404, detail=f"No existe el objeto con NORAD_CAT_ID {norad_id}")
+    return detail

@@ -1,51 +1,163 @@
+/** Reportes: vista previa y exportación CSV de consultas reales de SATCAT, NEO y la priorización. */
+import { Download, FileText, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Download, FileText, Search } from "lucide-react";
 import { toast } from "sonner";
-import useFetch from "@/hooks/useFetch";
-import { getSatcat } from "@/services/satcatService";
+
+import { ErrorState, LoadingBlock, Notice, PageFooter, PageHeader, Panel } from "@/components/common";
+import { Button, Label, NativeSelect, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/primitives";
+import useQuery from "@/hooks/useQuery";
+import { getNeoList, getPrioritization, getSatcatList } from "@/services/astroService";
+import { formatInt } from "@/utils/format";
+
+const MAX_ROWS = 5000;
+const PAGE = 200;
+
+const REPORTS = {
+  priority: {
+    label: "Ranking de revisión NEO (priorización)",
+    filters: { tier: ["", "A", "B", "C"] },
+    fetch: (f, page, size) => getPrioritization({ tier: f.tier || undefined, page, page_size: size }),
+    columns: [
+      ["rank", "Puesto"], ["neo_id", "ID NEO"], ["name", "Nombre"], ["tier", "Nivel"], ["review_score", "Puntuación"],
+      ["is_hazardous", "PHA"], ["min_miss_distance_ld", "Dist. mín. (LD)"], ["est_diameter_max_km", "Ø máx. (km)"],
+      ["max_relative_velocity_kms", "Vel. máx. (km/s)"], ["reasons", "Reglas activadas"],
+    ],
+  },
+  neo: {
+    label: "Catálogo NEO (un registro por asteroide)",
+    filters: { hazardous: ["", "true", "false"] },
+    fetch: (f, page, size) => getNeoList({ hazardous: f.hazardous === "" || f.hazardous == null ? undefined : f.hazardous === "true", page, page_size: size }),
+    columns: [
+      ["neo_id", "ID NEO"], ["name", "Nombre"], ["absolute_magnitude_h", "H"], ["est_diameter_min_km", "Ø mín. (km)"],
+      ["est_diameter_max_km", "Ø máx. (km)"], ["min_miss_distance_km", "Dist. mín. (km)"], ["max_relative_velocity_kms", "Vel. máx. (km/s)"],
+      ["observation_count", "Aproximaciones"], ["is_hazardous", "PHA"], ["tier", "Nivel"],
+    ],
+  },
+  satcat: {
+    label: "Catálogo SATCAT",
+    filters: { type: ["", "PAY", "R/B", "DEB", "UNK"], state: ["all", "in_orbit", "decayed"], orbit_class: ["", "LEO", "MEO", "GEO", "HEO"] },
+    fetch: (f, page, size) => getSatcatList({
+      object_type: f.type ? [f.type] : undefined, state: f.state || "all", orbit_class: f.orbit_class || undefined, page, page_size: size,
+    }),
+    columns: [
+      ["norad_cat_id", "NORAD"], ["object_name", "Nombre"], ["object_id", "Designación"], ["object_type", "Tipo"], ["owner_code", "Propietario"],
+      ["launch_date", "Lanzamiento"], ["decay_date", "Reingreso"], ["orbit_class", "Régimen"], ["inclination_deg", "Inclinación (°)"],
+      ["apogee_km", "Apogeo (km)"], ["perigee_km", "Perigeo (km)"], ["period_min", "Periodo (min)"],
+    ],
+  },
+};
+
+const FILTER_LABELS = {
+  tier: { label: "Nivel", options: { "": "Todos", A: "A · Alta", B: "B · Media", C: "C · Baja" } },
+  hazardous: { label: "Clasificación", options: { "": "Todos", true: "Potencialmente peligrosos", false: "No peligrosos" } },
+  type: { label: "Tipo", options: { "": "Todos", PAY: "Carga útil", "R/B": "Cuerpo de cohete", DEB: "Fragmento", UNK: "Desconocido" } },
+  state: { label: "Situación", options: { all: "Todos", in_orbit: "En órbita", decayed: "Reingresados" } },
+  orbit_class: { label: "Régimen", options: { "": "Todos", LEO: "LEO", MEO: "MEO", GEO: "GEO", HEO: "HEO" } },
+};
+
+const cell = (value) => (Array.isArray(value) ? value.join(" · ") : typeof value === "boolean" ? (value ? "Sí" : "No") : value ?? "");
 
 export default function Reportes() {
-  const { data, loading } = useFetch(() => getSatcat(1, 100), []);
-  const [filter, setFilter] = useState("");
+  const [kind, setKind] = useState("priority");
+  const [filters, setFilters] = useState({ tier: "A" });
+  const [exporting, setExporting] = useState(false);
+  const report = REPORTS[kind];
+  const preview = useQuery(["report", kind, filters], () => report.fetch(filters, 1, 25), { keepPrevious: true });
 
-  const reports = useMemo(() => (data?.items || []).map((item, index) => ({
-    id: `AST-${String(index + 1).padStart(4, "0")}`,
-    objeto: item.name,
-    norad: item.norad,
-    orbita: item.orbit,
-    estado: item.status,
-    fecha: `${item.launch_year || 2026}-11-18`,
-  })), [data]);
-
-  const visible = reports.filter((report) =>
-    `${report.objeto} ${report.norad} ${report.orbita}`.toLowerCase().includes(filter.toLowerCase()),
-  );
-
-  const exportCsv = () => {
-    if (!visible.length) return toast.error("No hay registros para exportar");
-    const columns = ["id", "objeto", "norad", "orbita", "estado", "fecha"];
-    const escape = (value) => `"${String(value).replaceAll('"', '""')}"`;
-    const csv = [columns.join(","), ...visible.map((row) => columns.map((column) => escape(row[column])).join(","))].join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "astroshield_reportes.csv";
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success("Reporte exportado");
+  const changeKind = (next) => {
+    setKind(next);
+    setFilters(next === "priority" ? { tier: "A" } : next === "satcat" ? { state: "in_orbit" } : {});
   };
 
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      const rows = [];
+      for (let page = 1; rows.length < MAX_ROWS; page++) {
+        const data = await report.fetch(filters, page, PAGE);
+        rows.push(...data.items);
+        if (page >= data.pages) break;
+      }
+      if (!rows.length) {
+        toast.error("No hay registros para exportar");
+        return;
+      }
+      const escape = (value) => `"${String(cell(value)).replaceAll('"', '""')}"`;
+      const csv = [
+        report.columns.map(([, header]) => escape(header)).join(","),
+        ...rows.slice(0, MAX_ROWS).map((row) => report.columns.map(([key]) => escape(row[key])).join(",")),
+      ].join("\n");
+      const url = URL.createObjectURL(new Blob([`﻿${csv}`], { type: "text/csv;charset=utf-8" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `astroshield_${kind}_${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Reporte exportado · ${formatInt(Math.min(rows.length, MAX_ROWS))} filas`);
+    } catch (error) {
+      toast.error(error.userMessage ?? "No se pudo exportar el reporte");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const columns = useMemo(() => report.columns.slice(0, 7), [report]);
+
   return (
-    <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-[1800px] space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-widest text-astro-cyan">Documentación</p><h1 className="mt-2 text-3xl font-semibold">Reportes</h1></div><button onClick={exportCsv} className="flex items-center gap-2 rounded-lg bg-astro-blue px-4 py-2.5 font-semibold" type="button"><Download size={18} /> Exportar CSV</button></header>
-      <div className="flex items-center gap-3 rounded-xl border border-astro-card bg-astro-card px-4 py-3"><Search size={18} className="text-astro-muted" /><input value={filter} onChange={(event) => setFilter(event.target.value)} className="w-full bg-transparent outline-none" placeholder="Filtrar por objeto, NORAD u órbita" /></div>
-      <article className="overflow-hidden rounded-xl border border-astro-card bg-astro-card">
-        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b border-astro-card text-xs uppercase tracking-wider text-astro-muted"><tr>{["Reporte", "Objeto", "NORAD", "Órbita", "Estado", "Fecha"].map((column) => <th className="px-5 py-4" key={column}>{column}</th>)}</tr></thead><tbody>
-          {loading ? <tr><td className="px-5 py-8 text-astro-muted" colSpan="6">Cargando reportes...</td></tr> : visible.map((report) => <tr className="border-b border-astro-card/60 last:border-0" key={report.id}><td className="px-5 py-4"><span className="flex items-center gap-2 font-medium"><FileText size={16} className="text-astro-cyan" />{report.id}</span></td><td className="px-5 py-4">{report.objeto}</td><td className="px-5 py-4 text-astro-muted">{report.norad}</td><td className="px-5 py-4 text-astro-muted">{report.orbita}</td><td className="px-5 py-4"><span className="rounded-full bg-astro-cyan/10 px-2 py-1 text-xs text-astro-cyan">{report.estado}</span></td><td className="px-5 py-4 text-astro-muted">{report.fecha}</td></tr>)}
-          {!loading && !visible.length && <tr><td className="px-5 py-8 text-center text-astro-muted" colSpan="6">No se encontraron reportes.</td></tr>}
-        </tbody></table></div>
-      </article>
-    </motion.section>
+    <>
+      <PageHeader eyebrow="Laboratorio  /  Documentación" title="Reportes"
+        description="Genera tablas a partir de los datos reales y descárgalas en CSV (abre en Excel o Google Sheets)."
+        actions={
+          <Button onClick={exportCsv} disabled={exporting || !preview.data?.total}>
+            {exporting ? <Loader2 className="animate-spin" /> : <Download />} Exportar CSV
+          </Button>
+        } />
+      <Notice label="Exportación trazable" tag={`Máx. ${formatInt(MAX_ROWS)} filas`}>
+        El archivo incluye todas las columnas del reporte y respeta los filtros elegidos. Los valores salen tal cual de la API.
+      </Notice>
+
+      <Panel title="Configuración del reporte" className="mb-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Label>
+            Reporte
+            <NativeSelect value={kind} onChange={(e) => changeKind(e.target.value)}>
+              {Object.entries(REPORTS).map(([id, r]) => <option key={id} value={id}>{r.label}</option>)}
+            </NativeSelect>
+          </Label>
+          {Object.entries(report.filters).map(([key, values]) => (
+            <Label key={key}>
+              {FILTER_LABELS[key].label}
+              <NativeSelect value={filters[key] ?? values[0]} onChange={(e) => setFilters((f) => ({ ...f, [key]: e.target.value }))}>
+                {values.map((v) => <option key={v} value={v}>{FILTER_LABELS[key].options[v]}</option>)}
+              </NativeSelect>
+            </Label>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title={report.label} description={preview.data ? `${formatInt(preview.data.total)} registros · vista previa de los primeros 25` : "Cargando…"}
+        contentClassName="px-0 pb-0" actions={<FileText className="size-4 text-muted-foreground" />}>
+        {preview.error ? <div className="p-4"><ErrorState error={preview.error} onRetry={() => preview.refetch()} /></div>
+          : !preview.data ? <LoadingBlock className="h-64 p-4" /> : (
+            <Table>
+              <TableHeader>
+                <TableRow>{columns.map(([key, header]) => <TableHead key={key} className="first:pl-5">{header}</TableHead>)}</TableRow>
+              </TableHeader>
+              <TableBody>
+                {preview.data.items.map((row, i) => (
+                  <TableRow key={i}>
+                    {columns.map(([key]) => (
+                      <TableCell key={key} className="max-w-64 truncate first:pl-5">
+                        {typeof row[key] === "number" && !Number.isInteger(row[key]) ? row[key].toFixed(3) : cell(row[key])}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+      </Panel>
+      <PageFooter />
+    </>
   );
 }

@@ -1,9 +1,13 @@
 /** Cliente HTTP centralizado para AstroShieldAI. */
 import axios from "axios";
 
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://127.0.0.1:8000",
-  timeout: 10000,
+  baseURL: API_BASE_URL,
+  timeout: 30000,
+  // FastAPI recibe listas como ?object_type=PAY&object_type=DEB (sin corchetes).
+  paramsSerializer: { indexes: null },
 });
 
 api.interceptors.request.use((config) => {
@@ -12,7 +16,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/** Registra errores de red sin ocultarlos a las pantallas consumidoras. */
+/** Normaliza los errores para que las pantallas muestren un mensaje útil. */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -22,11 +26,12 @@ api.interceptors.response.use(
       window.dispatchEvent(new CustomEvent("astroshield:logout"));
     }
     const detail = error.response?.data?.detail || error.response?.data?.message;
+    error.code = error.response?.data?.code || error.code;
     error.userMessage = (typeof detail === "string" && detail)
       || (Array.isArray(detail) && detail.map((item) => item.msg).filter(Boolean).join(". "))
       || (error.code === "ECONNABORTED"
         ? "La solicitud tardó demasiado."
-        : "No se pudo conectar con FastAPI. Verifica que Uvicorn esté activo en http://127.0.0.1:8000 y que VITE_API_URL apunte a esa dirección.");
+        : `No se pudo conectar con FastAPI. Verifica que Uvicorn esté activo en ${API_BASE_URL} y que VITE_API_URL apunte a esa dirección.`);
     return Promise.reject(error);
   },
 );

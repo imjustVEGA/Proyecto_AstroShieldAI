@@ -8,8 +8,11 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT_DIR / "backend" / "data"
 MODEL_DIR = ROOT_DIR / "backend" / "app" / "models"
 PROCESSED_DATA_PATH = DATA_DIR / "neos_processed.csv"
-RAW_DATA_PATH = DATA_DIR / "neos.csv"
+RAW_DATA_PATH = DATA_DIR / "neo_nasa.csv"
 SATCAT_DATA_PATH = DATA_DIR / "satcat.csv"
+# Datasets reales (los mismos que usa la carpeta Astroshield AI).
+SATCAT_RAW_PATH = Path(os.environ.get("ASTROSHIELD_SATCAT_CSV", DATA_DIR / "satcat_celestrak.csv"))
+NEO_RAW_PATH = Path(os.environ.get("ASTROSHIELD_NEO_CSV", DATA_DIR / "neo_nasa.csv"))
 DATABASE_URL = os.environ.get(
     "ASTROSHIELD_DATABASE_URL",
     f"sqlite:///{(DATA_DIR / 'astroshield.db').as_posix()}",

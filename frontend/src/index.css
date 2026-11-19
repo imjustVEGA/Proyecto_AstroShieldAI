@@ -1,51 +1,149 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Identidad visual de AstroShield AI (portada de la carpeta Astroshield AI):
+ * base casi negra azulada, paneles azul profundo, azul eléctrico y cian para detalles.
+ */
 @layer base {
   :root {
-    color: #E5E7EB;
-    background: #0B1020;
-    font-family: "Inter", sans-serif;
+    color-scheme: dark;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
   }
 
   * {
+    @apply border-border;
     box-sizing: border-box;
   }
 
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
   body {
+    @apply bg-background font-sans text-foreground antialiased;
     min-width: 320px;
-    min-height: 100vh;
     margin: 0;
-    background: #0B1020;
   }
 
   button,
-  input {
+  input,
+  select,
+  textarea {
     font: inherit;
+  }
+
+  ::selection {
+    background: rgb(59 130 246 / 0.35);
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1a2540;
+    border-radius: 8px;
   }
 }
 
-@layer utilities {
+@layer components {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Etiqueta en versalitas espaciadas (eyebrow). */
+  .eyebrow {
+    @apply text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground;
+  }
+
+  /* Fondo de campo estelar sutil para el visor orbital. */
+  .starfield {
+    background-color: #050912;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgb(255 255 255 / 0.35), transparent 60%),
+      radial-gradient(1px 1px at 72% 64%, rgb(255 255 255 / 0.25), transparent 60%),
+      radial-gradient(1px 1px at 38% 82%, rgb(255 255 255 / 0.2), transparent 60%),
+      radial-gradient(1px 1px at 88% 22%, rgb(255 255 255 / 0.3), transparent 60%),
+      radial-gradient(1px 1px at 56% 12%, rgb(255 255 255 / 0.25), transparent 60%),
+      radial-gradient(1px 1px at 22% 58%, rgb(255 255 255 / 0.2), transparent 60%),
+      radial-gradient(900px 500px at 50% 50%, rgb(59 130 246 / 0.07), transparent 70%);
+  }
+
   .scrollbar-dark {
-    scrollbar-color: #3B82F6 #141B2E;
+    scrollbar-color: #1a2540 transparent;
     scrollbar-width: thin;
   }
+}
 
-  .scrollbar-dark::-webkit-scrollbar {
-    width: 8px;
-  }
+/* Tooltip de react-globe.gl con el estilo de la app. */
+.float-tooltip-kap {
+  background: rgb(13 21 38 / 0.92) !important;
+  border: 1px solid #162038;
+  border-radius: 6px !important;
+  color: #e8eef9 !important;
+  font: 500 12px Manrope, sans-serif !important;
+  padding: 6px 8px !important;
+}
 
-  .scrollbar-dark::-webkit-scrollbar-track {
-    background: #141B2E;
-  }
+/* Marcador del perigeo en el globo (capa HTML de react-globe.gl). */
+.astro-globe-marker {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  transform: translate(-5px, -5px);
+  pointer-events: none;
+}
+.astro-globe-marker .dot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: #e8f2ff;
+  box-shadow: 0 0 0 3px #3b82f6, 0 0 14px rgb(59 130 246 / 0.8);
+}
+.astro-globe-marker .tag {
+  margin-top: -14px;
+  border: 1px solid #162038;
+  border-radius: 6px;
+  background: rgb(11 17 32 / 0.88);
+  padding: 4px 8px;
+  white-space: nowrap;
+  color: #e8eef9;
+  font: 600 12px/1.25 Manrope, sans-serif;
+}
+.astro-globe-marker .tag small {
+  display: block;
+  color: #8a99b4;
+  font-size: 10px;
+  font-weight: 500;
+}
 
-  .scrollbar-dark::-webkit-scrollbar-thumb {
-    background: #3B82F6;
-    border-radius: 9999px;
-  }
+/* Planeta animado de la pantalla de acceso (usa la textura generada). */
+.astro-planet {
+  border-radius: 9999px;
+  background-image: url("/textures/tierra-astroshield.jpg");
+  width: var(--planet, 320px);
+  height: var(--planet, 320px);
+  background-size: calc(var(--planet, 320px) * 2) var(--planet, 320px);
+  background-repeat: repeat-x;
+  box-shadow:
+    inset -28px -18px 60px rgb(0 0 0 / 0.85),
+    inset 10px 6px 30px rgb(56 189 248 / 0.18),
+    0 0 60px rgb(59 130 246 / 0.35);
+  animation: astro-planet-spin 60s linear infinite;
+}
+@keyframes astro-planet-spin {
+  from { background-position: 0 0; }
+  to { background-position: calc(var(--planet, 320px) * -2) 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .astro-planet { animation: none; }
 }

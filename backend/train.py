@@ -1,21 +1,21 @@
 """Entrenamiento reproducible de los modelos del MVP."""
 
 import joblib
-import pandas as pd
 from imblearn.over_sampling import SMOTE
 from sklearn.ensemble import IsolationForest, RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
 from backend.app.config import FEATURE_COLUMNS, MODEL_DIR, RAW_DATA_PATH, PROCESSED_DATA_PATH
+from backend.app.data import read_neo_csv
 
 
 def train_models() -> None:
     """Limpia el CSV oficial, balancea el target y persiste ambos modelos."""
     if not RAW_DATA_PATH.exists():
         raise FileNotFoundError(
-            f"Coloca el dataset oficial de NASA CNEOS en {RAW_DATA_PATH}."
+            f"Coloca el dataset NEO de NASA NeoWs en {RAW_DATA_PATH}."
         )
-    frame = pd.read_csv(RAW_DATA_PATH).dropna(
+    frame = read_neo_csv(RAW_DATA_PATH).dropna(
         subset=[*FEATURE_COLUMNS, "is_hazardous"]
     )
     frame["is_hazardous"] = frame["is_hazardous"].astype(bool)
@@ -40,6 +40,7 @@ def train_models() -> None:
     joblib.dump(classifier, MODEL_DIR / "random_forest.joblib")
     joblib.dump(scaler, MODEL_DIR / "feature_scaler.joblib")
     joblib.dump(anomaly_detector, MODEL_DIR / "isolation_forest.joblib")
+    print(f"Modelos guardados en {MODEL_DIR} ({len(frame):,} registros, {int(target.sum()):,} peligrosos).")
 
 
 if __name__ == "__main__":

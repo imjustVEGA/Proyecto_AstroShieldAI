@@ -1,10 +1,23 @@
-# AstroShieldAI
+# AstroShield AI
 
-MVP con FastAPI, RandomForest, IsolationForest y React para monitorear NEOs de
-NASA CNEOS. El proyecto no incluye datos inventados: descarga el CSV oficial y
-guárdalo como `backend/data/neos.csv`.
+Plataforma web para analizar, clasificar, visualizar y priorizar objetos espaciales: satélites, cuerpos de
+cohete, basura espacial (catálogo **SATCAT** de CelesTrak) y asteroides cercanos a la Tierra (**NEO** de NASA NeoWs).
 
-## Backend (PowerShell, terminal 1)
+Esta versión une los dos proyectos del equipo:
+
+| Viene de **Astroshield AI** | Viene de **FER** |
+|---|---|
+| Diseño de interfaz (paleta, tipografía Manrope, layout, componentes) | Login con JWT, roles y gestión de usuarios (SQLite) |
+| Globo 3D con capas orbitales por altitud, referencia GEO y órbita esquemática | Stack ligero: FastAPI + pandas, React 18 + Vite + Tailwind 3 |
+| Limpieza y validación de SATCAT y NEO, clasificación orbital LEO/MEO/GEO/HEO | Modelo de IA (Random Forest + Isolation Forest) en `/predict` |
+| Priorización transparente de NEO (niveles A/B/C), estadísticas, fuentes de datos | Reportes CSV, configuración |
+
+> Es un **sistema de apoyo a decisiones**. Los indicadores son descriptivos; no son predicciones de colisión ni
+> probabilidades de impacto.
+
+## Puesta en marcha (Windows, PowerShell)
+
+### Backend (terminal 1)
 
 ```powershell
 python -m venv backend\venv
@@ -12,28 +25,21 @@ python -m venv backend\venv
 & backend\venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Deja esta terminal abierta mientras uses la aplicación. La API expone
-`POST /token`, `GET /users/`, `GET /satcat` y `GET /stats`, entre otros endpoints.
-El request de `/predict` usa exactamente las cinco features numéricas definidas
-en el contrato del MVP.
+Los datos reales ya están en `backend/data/`:
 
-Si el puerto 8000 está ocupado, arranca Uvicorn con `--port 8030` y cambia
-`VITE_API_URL` en la terminal del frontend a `http://127.0.0.1:8030`.
+- `satcat_celestrak.csv` — 70 587 objetos (CelesTrak SATCAT)
+- `neo_nasa.csv` — 90 836 aproximaciones de 27 423 asteroides (NASA NeoWs)
 
-## Credenciales de prueba
+Al arrancar, el backend los limpia en memoria (≈2 s) con las mismas reglas de Astroshield AI. No necesita
+PostgreSQL: la base SQLite solo guarda usuarios.
 
-Al iniciar el backend se crea automáticamente una cuenta de administrador si
-todavía no existe:
+**Modelo de IA (una sola vez):** para activar el clasificador de la pantalla *Simulación orbital*:
 
-- **Email / usuario:** `admin@astroshield.com` (también puedes ingresar `admin`)
-- **Contraseña:** `admin123`
-- **Rol:** administrador
+```powershell
+& backend\venv\Scripts\python.exe -m backend.train
+```
 
-Estas credenciales son únicamente para desarrollo local. Antes de desplegar,
-configura `ASTROSHIELD_ADMIN_EMAIL`, `ASTROSHIELD_ADMIN_USERNAME`,
-`ASTROSHIELD_ADMIN_PASSWORD` y `ASTROSHIELD_JWT_SECRET` con valores seguros.
-
-## Frontend (PowerShell, terminal 2)
+### Frontend (terminal 2)
 
 ```powershell
 Set-Location frontend
@@ -42,61 +48,92 @@ $env:VITE_API_URL = "http://127.0.0.1:8000"
 npm run dev
 ```
 
-Abre la URL que muestre Vite (normalmente `http://localhost:5173`). CORS permite
-ese origen y `http://127.0.0.1:5173`; Axios conecta con la API en
-`http://127.0.0.1:8000`. Si cambias `VITE_API_URL`, reinicia Vite para aplicar
-el cambio.
+Abre `http://localhost:5173`. Si el puerto 8000 está ocupado, usa `--port 8030` en Uvicorn y cambia `VITE_API_URL`.
 
-ASTROSHIELD AI
+### Credenciales de prueba
 
-Backend / IA:
+- **Usuario:** `admin` (o `admin@astroshield.com`) · **Contraseña:** `admin123` · **Rol:** administrador
 
-Python 3.11.9: Lenguaje base para la IA y el procesamiento.
+Solo para desarrollo local. Antes de desplegar configura `ASTROSHIELD_ADMIN_EMAIL`, `ASTROSHIELD_ADMIN_USERNAME`,
+`ASTROSHIELD_ADMIN_PASSWORD` y `ASTROSHIELD_JWT_SECRET`.
 
-FastAPI 0.109.0: Crear el "puente" (API) para conectar Python con React.
+## Con Docker (imágenes de backend y frontend)
 
-Uvicorn 0.27.0: Encender el servidor de FastAPI.
+```powershell
+docker compose up -d --build
+docker compose run --rm backend python -m backend.train   # opcional: modelo de IA
+```
 
-Pandas 2.1.4: Limpiar y ordenar los datos (CSV).
+- Aplicación: http://localhost:8080
+- API y documentación OpenAPI: http://localhost:8000/docs
 
-NumPy 1.26.2: Hacer cálculos matemáticos con los datos.
+`backend/data` y `backend/app/models` se montan como volúmenes: los datos, usuarios y modelos persisten.
 
-Scikit-Learn 1.3.2: Entrenar los modelos (Random Forest e Isolation Forest).
+## Secciones de la interfaz
 
-Imbalanced-Learn 0.11.0: Ayudar al modelo a detectar los asteroides peligrosos (que son los menos).
+| Ruta | Sección | Contenido |
+|---|---|---|
+| `/` | Dashboard | Indicadores reales, globo 3D con capas por altitud, "En el radar", gráficas |
+| `/explorer` | Explorador espacial | Órbita esquemática del objeto elegido (tamaño, forma e inclinación reales) |
+| `/neos` | Objetos NEO | Indicadores, 4 gráficas (dispersión distancia–diámetro), tabla con filtros y ficha |
+| `/satcat` | Catálogo SATCAT | Indicadores, 4 gráficas, tabla con filtros, orden y ficha completa |
+| `/risks` | Análisis de riesgos | Niveles A/B/C, objetos prioritarios, metodología y ranking |
+| `/estadisticas` | Estadísticas | Distribuciones orbitales, matrices tipo × estado, comparación NEO |
+| `/simulacion` | Simulación orbital | Órbita kepleriana en el globo (periodo, vis-viva, ocupación real de la capa) y clasificador de IA |
+| `/reportes` | Reportes | Vista previa y exportación CSV (ranking NEO, catálogo NEO, SATCAT) |
+| `/datos` | Fuentes de datos | Procedencia, SHA-256, unidades verificadas e incidencias de calidad |
+| `/usuarios` | Usuarios | Alta, edición y baja de cuentas (solo administradores) |
 
-Joblib 1.3.2: Guardar el modelo entrenado en un archivo.
+Búsqueda global en la barra superior (atajo **Ctrl K**).
 
-Frontend / UI:
+## API
 
-React 18.2.0: Crear la interfaz visual interactiva.
+Todas las rutas de datos requieren el token de `POST /token`.
 
-Vite 5.0.8: Compilar React de forma rápida.
+| Método y ruta | Descripción |
+|---|---|
+| `GET /health` | Estado del servicio y de los datasets |
+| `GET /dashboard/summary` | Indicadores, NEO destacados, lanzamientos recientes |
+| `GET /search?q=` | Búsqueda global en SATCAT y NEO |
+| `GET /satcat` | Lista paginada. Filtros: `q`, `object_type`, `owner`, `state`, `ops_status`, `orbit_class`, `incomplete_only`; orden `sort`, `order` |
+| `GET /satcat/statistics` · `GET /satcat/{norad_id}` | Estadísticas del catálogo · ficha con etiquetas, calidad y registro original |
+| `GET /neo` | Asteroides (uno por objeto). Filtros de peligrosidad, nivel, diámetro (km), velocidad (km/h) y distancia (km) |
+| `GET /neo/statistics` · `GET /neo/distance-diameter` · `GET /neo/{id}` | Histogramas · dispersión · ficha con aproximaciones |
+| `GET /analytics/orbital-distribution` · `/analytics/object-classification` · `/analytics/neo-prioritization` | Analítica descriptiva y priorización |
+| `GET /visualization/orbital-shells` · `/visualization/capabilities` | Capas del globo y qué se puede visualizar |
+| `GET /datasets` | Fuentes, estado de carga e informe de calidad |
+| `POST /predict` | Clasificador de IA (Random Forest + Isolation Forest) |
+| `POST /token` · `/users/` | Autenticación y CRUD de usuarios |
 
-Tailwind CSS 3.4.1: Dar el diseño oscuro y futurista.
+## Pruebas
 
-Axios 1.6.5: Pedir los datos a Python (FastAPI).
+```powershell
+& backend\venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt
+& backend\venv\Scripts\python.exe -m pytest backend\tests            # limpieza, órbitas, priorización y API
+& backend\venv\Scripts\python.exe backend\scripts\smoke_api.py        # con el backend encendido
+```
 
-Recharts 2.10.4: Dibujar las gráficas de barras.
+## Textura de la Tierra
 
-React-Globe.gl 2.27.2: Renderizar el globo terráqueo 3D.
+El globo usa `frontend/public/textures/tierra-astroshield.jpg`, generada a partir de los contornos de Natural Earth
+(dominio público) con la paleta de la app, así que funciona sin internet. Para regenerarla:
 
-React Router DOM 6.21.1: Navegar entre las pantallas (Dashboard, NEO, etc.).
+```powershell
+pip install pillow
+python frontend\scripts\generar_textura_tierra.py
+```
 
-Lucide React 0.309.0: Agregar íconos bonitos al menú.
+## Priorización NEO (resumen)
 
-Hosting / Despliegue:
+1. **Nivel A**: `hazardous` según la fuente **y** alguna aproximación registrada a ≤ 0.05 UA.
+2. **Nivel B**: `hazardous`, o diámetro máximo estimado ≥ 140 m con aproximación ≤ 0.05 UA.
+3. **Nivel C**: el resto.
+4. **Orden dentro de cada nivel**: puntuación 0–100 = 45 % proximidad + 35 % tamaño + 20 % velocidad, en
+   percentiles relativos a este dataset.
 
-Render.com: Alojar el backend (Python) gratis.
+## Stack
 
-Vercel.com: Alojar el frontend (React) gratis.
-
-Herramientas de Apoyo:
-
-Visual Studio Code: Editor de código.
-
-Git / GitHub: Control de versiones del proyecto.
-
-Node.js 20.11.0: Necesario para que React funcione.
-
-Canva: Diseñar los wireframes (Alta fidelidad).
+Backend: Python 3.12, FastAPI 0.109, pandas 2.1, NumPy 1.26, scikit-learn 1.3, imbalanced-learn 0.11,
+SQLAlchemy 2 (SQLite), python-jose, passlib.
+Frontend: React 18.2, Vite 5, Tailwind CSS 3.4, react-globe.gl + three.js, Recharts, Axios, React Router 6,
+framer-motion, lucide-react, sonner.

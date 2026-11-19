@@ -34,3 +34,9 @@ venv/
 
 # Local database
 backend/data/*.db
+
+# Generados por el backend
+backend/data/neos_processed.csv
+backend/app/models/*.joblib
+_tmp_claude/
+_to_delete/

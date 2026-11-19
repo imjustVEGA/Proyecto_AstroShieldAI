@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Pencil, Plus, RefreshCw, Shield, Trash2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import UserModal from "@/components/UserModal";
+import { PageHeader } from "@/components/common";
 import { createUser, deleteUser, listUsers, updateUser } from "@/services/userService";
 import { useAuth } from "@/context/AuthContext";
 
@@ -57,22 +58,20 @@ export default function Usuarios() {
   };
 
   return (
-    <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-[1400px] space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div><p className="text-sm font-semibold uppercase tracking-widest text-astro-cyan">Administración</p><h1 className="mt-2 text-3xl font-semibold">Usuarios</h1><p className="mt-2 text-sm text-astro-muted">Gestiona las cuentas y permisos de acceso.</p></div>
-        <div className="flex gap-2"><button aria-label="Actualizar usuarios" className="rounded-lg border border-astro-card p-3 text-astro-muted hover:text-astro-cyan" disabled={loading} onClick={refresh} type="button"><RefreshCw className={loading ? "animate-spin" : ""} size={18} /></button><button className="flex items-center gap-2 rounded-lg bg-astro-blue px-4 py-3 text-sm font-semibold" onClick={() => setModalUser(null)} type="button"><Plus size={18} /> Nuevo usuario</button></div>
-      </header>
+    <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+      <PageHeader eyebrow="Sistema  /  Administración" title="Usuarios" description="Gestiona las cuentas y permisos de acceso."
+        actions={<div className="flex gap-2"><button aria-label="Actualizar usuarios" className="rounded-md border p-2.5 text-muted-foreground hover:text-accent" disabled={loading} onClick={refresh} type="button"><RefreshCw className={loading ? "animate-spin" : ""} size={16} /></button><button className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90" onClick={() => setModalUser(null)} type="button"><Plus size={16} /> Nuevo usuario</button></div>} />
       {loadError && <div className="flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200" role="alert"><span>{loadError}</span><button className="underline" onClick={refresh} type="button">Reintentar</button></div>}
-      <article className="overflow-hidden rounded-xl border border-astro-card bg-astro-card">
-        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b border-astro-bg text-xs uppercase tracking-wider text-astro-muted"><tr>{["ID", "Usuario", "Email", "Rol", "Estado", "Acciones"].map((item) => <th className="px-5 py-4" key={item}>{item}</th>)}</tr></thead><tbody>
+      <article className="overflow-hidden rounded-lg border bg-card">
+        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-[10px] uppercase tracking-[0.14em] text-muted-foreground"><tr>{["ID", "Usuario", "Email", "Rol", "Estado", "Acciones"].map((item) => <th className="px-5 py-4" key={item}>{item}</th>)}</tr></thead><tbody>
           {loading && <tr><td className="px-5 py-10 text-center text-astro-muted" colSpan="6">Cargando usuarios...</td></tr>}
-          {!loading && !loadError && users.map((user) => <tr className="border-b border-astro-bg/80 last:border-0" key={user.id}>
+          {!loading && !loadError && users.map((user) => <tr className="border-b border-border/70 last:border-0 hover:bg-secondary/40" key={user.id}>
             <td className="px-5 py-4 text-astro-muted">{user.id}</td>
             <td className="px-5 py-4"><span className="flex items-center gap-2 font-medium"><UserRound className="text-astro-cyan" size={17} />{user.username}</span></td>
             <td className="px-5 py-4 text-astro-muted">{user.email}</td>
             <td className="px-5 py-4"><span className="flex items-center gap-1.5">{user.role === "admin" && <Shield className="text-astro-cyan" size={14} />}{user.role === "admin" ? "Administrador" : "Usuario"}</span></td>
             <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${user.is_active ? "bg-astro-cyan/10 text-astro-cyan" : "bg-red-500/10 text-red-300"}`}>{user.is_active ? "Activo" : "Inactivo"}</span></td>
-            <td className="px-5 py-4"><div className="flex gap-2"><button aria-label={`Editar ${user.username}`} className="rounded-md border border-astro-bg p-2 text-astro-muted hover:text-astro-cyan" onClick={() => setModalUser(user)} type="button"><Pencil size={15} /></button><button aria-label={`Eliminar ${user.username}`} className="rounded-md border border-astro-bg p-2 text-astro-muted hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-40" disabled={user.id === currentUser?.id} onClick={() => remove(user)} title={user.id === currentUser?.id ? "No puedes eliminar tu propia cuenta" : "Eliminar usuario"} type="button"><Trash2 size={15} /></button></div></td>
+            <td className="px-5 py-4"><div className="flex gap-2"><button aria-label={`Editar ${user.username}`} className="rounded-md border p-2 text-astro-muted hover:text-astro-cyan" onClick={() => setModalUser(user)} type="button"><Pencil size={15} /></button><button aria-label={`Eliminar ${user.username}`} className="rounded-md border p-2 text-astro-muted hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-40" disabled={user.id === currentUser?.id} onClick={() => remove(user)} title={user.id === currentUser?.id ? "No puedes eliminar tu propia cuenta" : "Eliminar usuario"} type="button"><Trash2 size={15} /></button></div></td>
           </tr>)}
           {!loading && !loadError && users.length === 0 && <tr><td className="px-5 py-10 text-center text-astro-muted" colSpan="6">No hay usuarios registrados.</td></tr>}
         </tbody></table></div>
