@@ -31,3 +31,6 @@ __pycache__/
 # Entornos virtuales
 .venv/
 venv/
+
+# Local database
+backend/data/*.db
