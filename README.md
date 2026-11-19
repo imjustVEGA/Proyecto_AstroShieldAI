@@ -17,6 +17,9 @@ Deja esta terminal abierta mientras uses la aplicación. La API expone
 El request de `/predict` usa exactamente las cinco features numéricas definidas
 en el contrato del MVP.
 
+Si el puerto 8000 está ocupado, arranca Uvicorn con `--port 8030` y cambia
+`VITE_API_URL` en la terminal del frontend a `http://127.0.0.1:8030`.
+
 ## Credenciales de prueba
 
 Al iniciar el backend se crea automáticamente una cuenta de administrador si
