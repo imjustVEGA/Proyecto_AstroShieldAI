@@ -1,11 +1,16 @@
 /** Define la navegación principal del frontend. */
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Dashboard from "@/pages/Dashboard";
 import Explorer from "@/pages/Explorer";
 import Neos from "@/pages/Neos";
 import Risks from "@/pages/Risks";
 import Satcat from "@/pages/Satcat";
+import Login from "@/pages/Login";
+import Simulacion from "@/pages/Simulacion";
+import Reportes from "@/pages/Reportes";
+import Configuracion from "@/pages/Configuracion";
 
 function NotFound() {
   /** Renderiza la vista para rutas desconocidas. */
@@ -29,14 +34,20 @@ export default function App() {
   /** Declara las rutas públicas de la aplicación. */
   return (
     <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="explorer" element={<Explorer />} />
-        <Route path="neos" element={<Neos />} />
-        <Route path="satcat" element={<Satcat />} />
-        <Route path="risks" element={<Risks />} />
-        <Route path="404" element={<NotFound />} />
-        <Route path="*" element={<Navigate replace to="/404" />} />
+      <Route path="/login" element={<Login />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="explorer" element={<Explorer />} />
+          <Route path="neos" element={<Neos />} />
+          <Route path="satcat" element={<Satcat />} />
+          <Route path="risks" element={<Risks />} />
+          <Route path="simulacion" element={<Simulacion />} />
+          <Route path="reportes" element={<Reportes />} />
+          <Route path="configuracion" element={<Configuracion />} />
+          <Route path="404" element={<NotFound />} />
+          <Route path="*" element={<Navigate replace to="/404" />} />
+        </Route>
       </Route>
     </Routes>
   );

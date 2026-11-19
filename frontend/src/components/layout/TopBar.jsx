@@ -1,8 +1,10 @@
 /** Barra superior con búsqueda, alertas y perfil. */
 import { Bell, Menu, Search, UserCircle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 /** Renderiza los controles globales del encabezado. */
 export default function TopBar({ onMenuClick }) {
+  const { user, logout } = useAuth();
   /** Evita el envío accidental del formulario de búsqueda. */
   const handleSubmit = (event) => event.preventDefault();
 
@@ -35,10 +37,10 @@ export default function TopBar({ onMenuClick }) {
         <Bell size={19} />
         <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-astro-orange" />
       </button>
-      <div className="hidden items-center gap-2 text-sm sm:flex">
+      <button className="hidden items-center gap-2 text-sm sm:flex" onClick={logout} title="Cerrar sesión" type="button">
         <UserCircle className="text-astro-cyan" size={30} />
-        <span className="text-astro-text">Mission admin</span>
-      </div>
+        <span className="text-astro-text">{user?.username || "Mission admin"}</span>
+      </button>
     </header>
   );
 }

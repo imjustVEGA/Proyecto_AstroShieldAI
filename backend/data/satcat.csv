@@ -1,0 +1,13 @@
+norad,name,type,orbit,apogee,perigee,inclination,status,launch_year
+25544,ISS (ZARYA),Estacion espacial,LEO,421,418,51.64,Activo,1998
+48274,STARLINK-2393,Satelite de comunicaciones,LEO,548,547,53.22,Activo,2021
+43873,ONEWEB-0014,Satelite de comunicaciones,LEO,1200,1198,87.9,Activo,2019
+39159,HISPASAT 30W-6,Satelite de comunicaciones,GEO,35789,35777,0.07,Activo,2017
+43013,GALILEO 26A,Satelite de navegacion,MEO,23222,23218,56,Activo,2017
+41765,GPS BIIR-11,Satélite de navegación,MEO,20197,20181,55.2,Activo,2015
+43693,COSMOS 2542,Satélite militar,LEO,414,390,97.7,Activo,2019
+40071,SWARM-A,Satélite científico,LEO,485,477,87.4,Activo,2013
+44781,NOAA-20,Satélite meteorológico,LEO,826,824,98.7,Activo,2017
+57294,EUCLID,Observatorio espacial,HEO,1500000,400000,30,Activo,2023
+28485,GOES-16,Satélite meteorológico,GEO,35793,35783,0.1,Activo,2016
+20580,HST,Observatorio espacial,LEO,540,527,28.5,Activo,1990

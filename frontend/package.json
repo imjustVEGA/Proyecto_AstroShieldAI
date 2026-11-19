@@ -8,19 +8,26 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@hookform/resolvers": "^7.0.7",
     "axios": "1.6.5",
+    "clsx": "^2.1.1",
+    "framer-motion": "^14.14.0",
     "lucide-react": "0.309.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-globe.gl": "2.27.2",
+    "react-hook-form": "^7.92.0",
     "react-router-dom": "6.21.1",
-    "recharts": "2.10.4"
+    "recharts": "2.10.4",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "4.2.1",
     "autoprefixer": "10.4.17",
     "postcss": "8.4.33",
-    "vite": "5.0.8",
-    "tailwindcss": "3.4.1"
+    "tailwindcss": "3.4.1",
+    "vite": "5.0.8"
   }
 }

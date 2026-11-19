@@ -11,9 +11,9 @@ export const NAV_ITEMS = [
   { label: "Objetos NEO", path: "/neos", icon: "neos" },
   { label: "Catálogo SATCAT", path: "/satcat", icon: "satcat" },
   { label: "Análisis de riesgos", path: "/risks", icon: "risks" },
-  { label: "Simulación orbital", path: "#", icon: "simulation", disabled: true },
-  { label: "Reportes", path: "#", icon: "reports", disabled: true },
-  { label: "Configuración", path: "#", icon: "settings", disabled: true },
+  { label: "Simulación orbital", path: "/simulacion", icon: "simulation" },
+  { label: "Reportes", path: "/reportes", icon: "reports" },
+  { label: "Configuración", path: "/configuracion", icon: "settings" },
 ];
 
 export const AI_TRANSPARENCY_NOTE =

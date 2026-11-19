@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { motion } from "framer-motion";
 import { NAV_ITEMS } from "@/utils/constants";
 
 const icons = {
@@ -87,22 +88,23 @@ export default function Sidebar({ isOpen, onClose }) {
               );
             }
             return (
-              <NavLink
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition ${
-                    isActive
-                      ? "bg-astro-blue/15 font-semibold text-astro-cyan"
-                      : "text-astro-muted hover:bg-astro-card hover:text-astro-text"
-                  }`
-                }
-                end={item.path === "/"}
-                key={item.label}
-                onClick={handleNavigation}
-                to={item.path}
-              >
-                <Icon size={18} />
-                {item.label}
-              </NavLink>
+              <motion.div key={item.label} whileHover={{ x: 3 }} transition={{ duration: 0.16 }}>
+                <NavLink
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition ${
+                      isActive
+                        ? "bg-astro-blue/15 font-semibold text-astro-cyan"
+                        : "text-astro-muted hover:bg-astro-card hover:text-astro-text"
+                    }`
+                  }
+                  end={item.path === "/"}
+                  onClick={handleNavigation}
+                  to={item.path}
+                >
+                  <Icon size={18} />
+                  {item.label}
+                </NavLink>
+              </motion.div>
             );
           })}
         </nav>
