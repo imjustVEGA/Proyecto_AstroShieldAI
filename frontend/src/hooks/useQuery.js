@@ -14,6 +14,19 @@ export function clearQueryCache() {
   cache.clear();
 }
 
+/**
+ * Pide un dato usando la misma caché que useQuery (por ejemplo, la ficha de cada objeto
+ * seleccionado en el mapa 3D): si ya está en caché y es reciente, no vuelve a pedirlo.
+ */
+export async function fetchCached(key, fetcher) {
+  const cacheKey = JSON.stringify(key);
+  const entry = cache.get(cacheKey);
+  if (entry && Date.now() - entry.time < STALE_MS) return entry.data;
+  const data = await fetcher();
+  cache.set(cacheKey, { data, time: Date.now() });
+  return data;
+}
+
 export default function useQuery(key, fetcher, { enabled = true, keepPrevious = false } = {}) {
   const cacheKey = JSON.stringify(key);
   const [state, setState] = useState({ key: null, data: undefined, error: null, fetching: false });

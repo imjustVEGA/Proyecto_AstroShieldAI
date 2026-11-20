@@ -16,7 +16,7 @@ function ComponentBar({ value, label }) {
       <div className="h-1 w-12 overflow-hidden rounded-full bg-secondary">
         <div className="h-full rounded-full bg-[#3987e5]" style={{ width: `${value * 100}%` }} />
       </div>
-      <span className="tabular w-6 text-[10.5px] text-muted-foreground">{formatNumber(value * 100, 0)}</span>
+      <span className="tabular w-6 text-[0.75rem] text-muted-foreground">{formatNumber(value * 100, 0)}</span>
     </div>
   );
 }
@@ -27,7 +27,7 @@ function Row({ n }) {
       <TableCell className="tabular pl-5 text-muted-foreground">{n.rank}</TableCell>
       <TableCell>
         <Link to={`/neos?id=${n.neo_id}`} className="font-medium hover:text-blue-300">{n.name}</Link>
-        <div className="max-w-72 truncate text-[10.5px] text-muted-foreground" title={n.reasons.join(" · ")}>
+        <div className="max-w-72 truncate text-[0.75rem] text-muted-foreground" title={n.reasons.join(" · ")}>
           {n.reasons.length ? n.reasons.join(" · ") : "Sin reglas activadas"}
         </div>
       </TableCell>
@@ -55,22 +55,22 @@ export default function PrioritizationView() {
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)]">
       <Panel title="Metodología" description={`Versión ${m.version}. ${m.summary}`}>
-        <div className="flex flex-col gap-5 text-[12px]">
+        <div className="flex flex-col gap-5 text-[0.8125rem]">
           <div>
             <SectionLabel>1 · Niveles por reglas</SectionLabel>
             <ul className="space-y-2.5">
               {m.tiers.map((t) => (
                 <li key={t.tier} className="flex flex-col gap-1">
                   <span className="flex items-center gap-2"><TierBadge tier={t.tier} />
-                    <span className="tabular text-[10.5px] text-muted-foreground">{formatInt(tierCounts[t.tier])} objetos</span></span>
-                  <span className="text-[11px] text-muted-foreground">{t.rule}</span>
+                    <span className="tabular text-[0.75rem] text-muted-foreground">{formatInt(tierCounts[t.tier])} objetos</span></span>
+                  <span className="text-[0.75rem] text-muted-foreground">{t.rule}</span>
                 </li>
               ))}
             </ul>
           </div>
           <div>
             <SectionLabel>2 · Puntuación dentro de cada nivel</SectionLabel>
-            <ul className="space-y-1.5 text-[11px]">
+            <ul className="space-y-1.5 text-[0.75rem]">
               {m.score.components.map((c) => (
                 <li key={c.name} className="flex justify-between gap-2">
                   <span>{COMPONENT_LABEL[c.name] ?? c.name} <span className="text-muted-foreground">({c.variable}, {c.transform})</span></span>
@@ -81,7 +81,7 @@ export default function PrioritizationView() {
           </div>
           <div>
             <SectionLabel>Limitaciones</SectionLabel>
-            <ul className="list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+            <ul className="list-disc space-y-1 pl-4 text-[0.75rem] text-muted-foreground">
               {m.limitations.map((l) => <li key={l}>{l}</li>)}
             </ul>
           </div>
@@ -93,7 +93,7 @@ export default function PrioritizationView() {
         description="Ordenado por nivel y luego por puntuación. Los componentes son percentiles dentro de este dataset."
         contentClassName="px-0 pb-0"
         actions={
-          <NativeSelect aria-label="Filtrar por nivel" value={tier} onChange={(e) => set({ tier: e.target.value })} className="h-8 text-[11px]">
+          <NativeSelect aria-label="Filtrar por nivel" value={tier} onChange={(e) => set({ tier: e.target.value })} className="h-8 text-[0.75rem]">
             <option value="">Todos los niveles</option>
             <option value="A">Nivel A · Alta</option>
             <option value="B">Nivel B · Media</option>

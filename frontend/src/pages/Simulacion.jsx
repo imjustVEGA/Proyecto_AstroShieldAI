@@ -92,8 +92,8 @@ function OrbitLab() {
       <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
         <Card className="flex flex-col gap-4 p-5">
           <div>
-            <h3 className="flex items-center gap-2 text-[14px] font-semibold"><Activity className="size-4 text-blue-300" /> Parámetros de la órbita</h3>
-            <p className="text-[10.5px] text-muted-foreground">Altitudes sobre el elipsoide WGS-84</p>
+            <h3 className="flex items-center gap-2 text-[0.9375rem] font-semibold"><Activity className="size-4 text-blue-300" /> Parámetros de la órbita</h3>
+            <p className="text-[0.75rem] text-muted-foreground">Altitudes sobre el elipsoide WGS-84</p>
           </div>
           <Label>
             Ejemplo
@@ -114,7 +114,7 @@ function OrbitLab() {
           <NumberField label="Apogeo" unit="km" value={params.apogee} min={150} max={60000} onChange={update("apogee")} />
           <NumberField label="Perigeo" unit="km" value={params.perigee} min={150} max={60000} onChange={update("perigee")} />
           <NumberField label="Inclinación" unit="°" value={params.inclination} min={0} max={180} step={0.1} onChange={update("inclination")} />
-          {!valid && <p className="text-[11px] text-red-300">Usa altitudes ≥ 100 km y una inclinación entre 0° y 180°.</p>}
+          {!valid && <p className="text-[0.75rem] text-red-300">Usa altitudes ≥ 100 km y una inclinación entre 0° y 180°.</p>}
         </Card>
 
         <Card className="relative h-[520px] overflow-hidden lg:h-[600px]">
@@ -142,7 +142,7 @@ function OrbitLab() {
           caption={band ? `${band.label} · datos SATCAT` : "Fuera de las capas registradas"}
           help="Cuenta los objetos en órbita cuya altitud media cae en la misma banda que esta órbita." />
       </div>
-      <p className="mt-2 text-[10.5px] text-muted-foreground">
+      <p className="mt-2 text-[0.75rem] text-muted-foreground">
         Excentricidad {dyn ? formatNumber(dyn.e, 4) : "—"} · semieje mayor {dyn ? formatInt(dyn.a) : "—"} km. Modelo de dos cuerpos sin perturbaciones
         (J2, arrastre atmosférico): sirve para comparar órbitas, no para predecir posiciones ni colisiones.
       </p>
@@ -222,31 +222,31 @@ function AiClassifier() {
           <div className="flex flex-col gap-3">
             <ErrorState error={error} onRetry={run} />
             {error.response?.status === 503 && (
-              <p className="text-[11.5px] text-muted-foreground">
+              <p className="text-[0.75rem] text-muted-foreground">
                 Entrena los modelos una vez con <code className="rounded bg-muted px-1.5 py-0.5">python -m backend.train</code> (desde la carpeta del proyecto) y vuelve a intentarlo.
               </p>
             )}
           </div>
         ) : !result ? (
-          <p className="text-[12px] text-muted-foreground">Ajusta las variables o carga un NEO real y pulsa “Evaluar con el modelo”.</p>
+          <p className="text-[0.8125rem] text-muted-foreground">Ajusta las variables o carga un NEO real y pulsa “Evaluar con el modelo”.</p>
         ) : (
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="text-[13px]">Predicción:</span>
+              <span className="text-[0.875rem]">Predicción:</span>
               <HazardBadge hazardous={result.hazardous} />
               {source && (
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-[0.75rem] text-muted-foreground">
                   Clasificación de NASA para {source.name}: {source.hazardous ? "potencialmente peligroso" : "no peligroso"}
                   {source.hazardous === result.hazardous ? " · coincide" : " · no coincide"}
                 </span>
               )}
             </div>
             <div>
-              <div className="mb-1 flex justify-between text-[11px] text-muted-foreground">
+              <div className="mb-1 flex justify-between text-[0.75rem] text-muted-foreground">
                 <span>Probabilidad de clase PHA</span><span className="tabular text-foreground">{formatPercent(result.probability)}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                <div className="h-full rounded-full" style={{ width: `${result.probability * 100}%`, background: result.hazardous ? "#c98500" : "#3987e5" }} />
+                <div className="h-full rounded-full" style={{ width: `${Math.min(100, Math.max(0, result.probability * 100))}%`, background: result.hazardous ? "#c98500" : "#3987e5" }} />
               </div>
             </div>
             <FieldGrid items={[
@@ -254,7 +254,7 @@ function AiClassifier() {
               ["Interpretación", result.anomaly_score < 0 ? "Atípico respecto al dataset" : "Dentro de lo habitual"],
               ["Versión del modelo", result.model_version],
             ]} />
-            <p className="text-[10.5px] text-muted-foreground">
+            <p className="text-[0.75rem] text-muted-foreground">
               El modelo estima si el objeto se parece a los clasificados como PHA por NASA. No calcula órbitas, MOID ni probabilidad de impacto.
             </p>
           </div>

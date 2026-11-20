@@ -122,7 +122,7 @@ function OrbitalTab() {
                   ))}
                 </TableBody>
               </Table>
-              <ul className="mt-3 list-disc space-y-0.5 pl-4 text-[11px] text-muted-foreground">
+              <ul className="mt-3 list-disc space-y-0.5 pl-4 text-[0.75rem] text-muted-foreground">
                 {dist.data.notes.map((n) => <li key={n}>{n}</li>)}
               </ul>
             </Panel>
@@ -225,7 +225,7 @@ export default function Estadisticas() {
         {TABS.map((t) => (
           <button key={t.id} type="button" role="tab" aria-selected={tab === t.id}
             onClick={() => set({ tab: t.id === "orbital" ? null : t.id, types: null })}
-            className={cn("rounded-md px-4 py-1.5 text-[12.5px] text-muted-foreground transition-colors", tab === t.id && "bg-secondary text-foreground")}>
+            className={cn("rounded-md px-4 py-1.5 text-[0.8125rem] text-muted-foreground transition-colors", tab === t.id && "bg-secondary text-foreground")}>
             {t.label}
           </button>
         ))}

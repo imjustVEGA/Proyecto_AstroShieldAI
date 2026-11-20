@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { Telescope } from "@/components/icons";
+import { useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { NAV_ITEMS } from "@/utils/constants";
 import { useAuth } from "@/context/AuthContext";
@@ -40,10 +41,10 @@ function Brand({ onNavigate }) {
         <Shield className="size-[18px] text-blue-300" strokeWidth={1.8} />
       </span>
       <span className="leading-tight">
-        <span className="block text-[17px] font-bold tracking-tight">
-          AstroShield<sup className="ml-0.5 text-[9px] font-semibold text-primary">AI</sup>
+        <span className="block text-[1.0625rem] font-bold tracking-tight">
+          AstroShield<sup className="ml-0.5 text-[0.6875rem] font-semibold text-primary">AI</sup>
         </span>
-        <span className="block text-[7.5px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Space intelligence platform</span>
+        <span className="block text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Inteligencia espacial</span>
       </span>
     </Link>
   );
@@ -63,13 +64,13 @@ function SidebarContent({ onNavigate }) {
           <div key={section} className="mb-3">
             <p className="eyebrow px-6 pb-2">{section}</p>
             <nav aria-label={section} className="flex flex-col gap-1 px-3">
-              {items.filter((i) => i.section === section).map(({ path, label, icon }) => {
+              {items.filter((i) => i.section === section).map(({ path, label, icon, description }) => {
                 const Icon = icons[icon];
                 return (
-                  <NavLink key={path} to={path} end={path === "/"} onClick={onNavigate}
+                  <NavLink key={path} to={path} end={path === "/"} onClick={onNavigate} title={description}
                     className={({ isActive }) => cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-[12.5px] text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground",
-                      isActive && "bg-secondary text-foreground",
+                      "relative flex items-center gap-3 rounded-md px-3 py-2.5 text-[0.875rem] text-secondary-foreground transition-colors hover:bg-secondary/70 hover:text-foreground",
+                      isActive && "bg-secondary font-semibold text-foreground before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-primary",
                     )}>
                     {({ isActive }) => (
                       <>
@@ -85,14 +86,14 @@ function SidebarContent({ onNavigate }) {
           </div>
         ))}
       </div>
-      <div className="px-6 pb-3 text-[10px] text-muted-foreground">
+      <div className="px-6 pb-3 text-[0.6875rem] text-muted-foreground">
         <span className="mr-1.5 inline-block size-1.5 rounded-full bg-primary align-middle" /> Prototipo académico
       </div>
       <div className="m-3 mt-0 flex items-center gap-3 rounded-lg border bg-card/60 p-3">
-        <span className="grid size-8 place-items-center rounded-full border border-primary/40 bg-primary/10 text-[10px] font-semibold text-blue-200">{initials}</span>
+        <span className="grid size-8 place-items-center rounded-full border border-primary/40 bg-primary/10 text-[0.6875rem] font-semibold text-blue-200">{initials}</span>
         <span className="min-w-0 leading-tight">
-          <span className="block truncate text-[12px] font-semibold">{user?.username ?? "AstroShield AI"}</span>
-          <span className="block truncate text-[10px] text-muted-foreground">
+          <span className="block truncate text-[0.8125rem] font-semibold">{user?.username ?? "AstroShield AI"}</span>
+          <span className="block truncate text-[0.6875rem] text-muted-foreground">
             {user?.role === "admin" ? "Administrador" : "Usuario"} · v2.0
           </span>
         </span>
@@ -102,15 +103,22 @@ function SidebarContent({ onNavigate }) {
 }
 
 export default function Sidebar({ isOpen, onClose }) {
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
+
   return (
     <>
-      <aside className="hidden w-60 shrink-0 border-r bg-sidebar lg:block">
+      <aside className="hidden w-64 shrink-0 border-r bg-sidebar lg:block" aria-label="Navegación principal">
         <SidebarContent onNavigate={() => undefined} />
       </aside>
       {isOpen && (
         <div className="fixed inset-0 z-50 bg-background/80 lg:hidden" onClick={onClose}>
-          <aside className="relative h-full w-64 border-r bg-sidebar" onClick={(e) => e.stopPropagation()}>
-            <button type="button" aria-label="Cerrar menú" onClick={onClose} className="absolute right-3 top-5 text-muted-foreground">
+          <aside className="relative h-full w-72 max-w-[85vw] border-r bg-sidebar" aria-label="Navegación principal" onClick={(e) => e.stopPropagation()}>
+            <button type="button" aria-label="Cerrar menú" onClick={onClose} className="absolute right-3 top-5 rounded-md p-1 text-muted-foreground hover:text-foreground">
               <X className="size-5" />
             </button>
             <SidebarContent onNavigate={onClose} />

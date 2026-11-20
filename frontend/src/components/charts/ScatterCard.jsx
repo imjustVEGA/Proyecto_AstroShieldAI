@@ -79,7 +79,7 @@ export function ScatterCard({ title, description, help, series, xName, yName, he
       <div ref={box} style={{ height }}>
         <canvas ref={canvas} style={{ width: "100%", height: height - 20 }} role="img"
           aria-label={`${title}: ${series.map((s) => `${s.points.length} ${s.name}`).join(", ")}`} />
-        <div className="mt-1 flex flex-wrap gap-3 text-[10px] text-secondary-foreground">
+        <div className="mt-1 flex flex-wrap gap-3 text-[0.6875rem] text-secondary-foreground">
           {series.map((s) => (
             <span key={s.name} className="flex items-center gap-1.5">
               <span className="size-2 rounded-full" style={{ background: s.color }} aria-hidden /> {s.name}

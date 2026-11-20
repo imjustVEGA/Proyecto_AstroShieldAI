@@ -7,11 +7,11 @@ export const useShells = () => useQuery(["shells"], astro.getShells);
 export const useCapabilities = () => useQuery(["capabilities"], astro.getCapabilities);
 export const useDatasets = () => useQuery(["datasets"], astro.getDatasets);
 
-export const useSatcatList = (params) => useQuery(["satcat", params], () => astro.getSatcatList(params), { keepPrevious: true });
+export const useSatcatList = (params, enabled = true) => useQuery(["satcat", params], () => astro.getSatcatList(params), { keepPrevious: true, enabled });
 export const useSatcatStats = () => useQuery(["satcat-stats"], astro.getSatcatStats);
 export const useSatcatDetail = (id) => useQuery(["satcat", id], () => astro.getSatcatDetail(id), { enabled: id != null });
 
-export const useNeoList = (params) => useQuery(["neo", params], () => astro.getNeoList(params), { keepPrevious: true });
+export const useNeoList = (params, enabled = true) => useQuery(["neo", params], () => astro.getNeoList(params), { keepPrevious: true, enabled });
 export const useNeoStats = () => useQuery(["neo-stats"], astro.getNeoStats);
 export const useNeoDetail = (id) => useQuery(["neo", id], () => astro.getNeoDetail(id), { enabled: id != null });
 export const useNeoDistanceDiameter = () => useQuery(["neo-dd"], astro.getNeoDistanceDiameter);

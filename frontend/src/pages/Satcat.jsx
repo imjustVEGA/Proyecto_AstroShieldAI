@@ -1,15 +1,15 @@
 /** Catálogo SATCAT: indicadores, 4 gráficas y tabla con filtros y ficha completa (datos reales de CelesTrak). */
-import { CheckCircle2, ChevronRight, Orbit, Radio, Satellite } from "lucide-react";
+import { BarChart3, CheckCircle2, ChevronRight, LayoutList, Orbit, Radio, Satellite } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { BarChartCard } from "@/components/charts/BarChartCard";
 import { CHART } from "@/components/charts/theme";
 import { ErrorState, IconTile, LoadingBlock, Notice, PageFooter, PageHeader, Pagination, StatCard } from "@/components/common";
-import { OBJECT_TYPE_COLOR, ObjectTypeLabel, StateBadge } from "@/components/labels";
+import { GLOSSARY, OBJECT_TYPE_COLOR, ObjectTypeLabel, StateBadge } from "@/components/labels";
 import SortableHead from "@/components/SortableHead";
 import TableToolbar from "@/components/TableToolbar";
 import {
-  Badge, Card, Input, Label, NativeSelect, Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Badge, Card, InfoTip, Input, Label, NativeSelect, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabPanel, Tabs,
 } from "@/components/ui/primitives";
 import SatelliteDetailPanel from "@/features/SatelliteDetailPanel";
 import { useOrbitalDistribution, useSatcatList, useSatcatStats } from "@/hooks/queries";
@@ -18,9 +18,13 @@ import useUrlParams from "@/hooks/useUrlParams";
 import { formatBin, formatDate, formatInt, formatNumber, formatPercent } from "@/utils/format";
 
 const ADVANCED = ["state", "class", "owner", "incomplete"];
+const VIEWS = [
+  { id: "general", label: "Vista general", icon: LayoutList, hint: "indicadores y catálogo" },
+  { id: "analisis", label: "Análisis", icon: BarChart3, hint: "gráficas y distribuciones" },
+];
 const NO_TYPES = [];
 
-function Overview() {
+function Overview({ part = "kpis" }) {
   const stats = useSatcatStats();
   const dist = useOrbitalDistribution(NO_TYPES);
   const view = useMemo(() => stats.data && {
@@ -44,9 +48,8 @@ function Overview() {
   const t = stats.data.totals;
   const complete = t.total - t.incomplete_orbit;
 
-  return (
-    <>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  if (part === "kpis") return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Objetos catalogados" value={t.total} icon={Satellite} spark={view.spark}
           caption="Desde 1957 · tendencia: objetos por año de lanzamiento (30 años)" />
         <StatCard label="En órbita" value={t.in_orbit} icon={Orbit} tone="teal" caption={`${formatInt(t.decayed)} ya reingresaron`} />
@@ -54,8 +57,13 @@ function Overview() {
           caption={`${formatInt(t.debris_in_orbit)} fragmentos de basura en órbita`} />
         <StatCard label="Con parámetros orbitales" value={complete} icon={CheckCircle2} tone="green"
           caption={`${formatPercent(complete / t.total)} completos · RCS sin dato en ${formatInt(t.missing_rcs)}`} />
-      </div>
-      <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    </div>
+  );
+
+  return (
+    <>
+      <p className="mb-3 text-[0.8125rem] text-muted-foreground">Tipos de objeto, lanzamientos por año y características de las órbitas del catálogo.</p>
+      <div className="grid gap-4 md:grid-cols-2">
         <BarChartCard title="Tipos de objeto" description="Registros por tipo (todo el catálogo)" data={view.types} />
         <BarChartCard title="Lanzamientos por año" description="Objetos catalogados por año de lanzamiento" data={view.years} color={CHART.series2} />
         {orbital ? (
@@ -93,7 +101,8 @@ export default function Satcat() {
     state: get("state") || "all", orbit_class: get("class") || undefined, incomplete_only: get("incomplete") === "1" || undefined,
     sort, order, page, page_size: 25,
   }), [get, sort, order, page]);
-  const query = useSatcatList(params);
+  const view = get("vista") === "analisis" ? "analisis" : "general";
+  const query = useSatcatList(params, view === "general");
 
   return (
     <>
@@ -102,21 +111,25 @@ export default function Satcat() {
         Parámetros orbitales resumidos (periodo, inclinación, apogeo y perigeo) con unidades validadas. No incluye TLE/OMM.
       </Notice>
 
-      <Overview />
+      <Tabs tabs={VIEWS} value={view} onChange={(v) => set({ vista: v === "general" ? null : v })} label="Nivel de detalle" idPrefix="satcat-view" className="mb-4" />
+      <TabPanel id={view} idPrefix="satcat-view">
+      {view === "analisis" ? <Overview part="charts" /> : (
+      <>
+      <Overview part="kpis" />
 
       <Card className="mt-4">
         <div className="flex items-start justify-between gap-3 px-5 pb-4 pt-5">
           <div>
-            <h3 className="text-[14px] font-semibold">Catálogo de objetos artificiales</h3>
-            <p className="text-[10.5px] text-muted-foreground">Selecciona una fila para ver su ficha completa</p>
+            <h3 className="text-[0.9375rem] font-semibold">Catálogo de objetos artificiales</h3>
+            <p className="text-[0.75rem] text-muted-foreground">Selecciona una fila para ver su ficha completa</p>
           </div>
-          <span className="rounded-[4px] border px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Dataset real</span>
+          <span className="rounded-[4px] border px-2 py-0.5 text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground">Dataset real</span>
         </div>
         <TableToolbar search={text} onSearch={setText} placeholder="Nombre, designación o NORAD…"
           filtersOpen={filtersOpen} onToggleFilters={() => setFiltersOpen((v) => !v)}
           activeFilters={ADVANCED.filter((k) => get(k)).length} total={query.data?.total}
           select={
-            <NativeSelect aria-label="Tipo de objeto" className="w-44" value={get("type")} onChange={(e) => set({ type: e.target.value })}>
+            <NativeSelect aria-label="Tipo de objeto" className="w-auto" value={get("type")} onChange={(e) => set({ type: e.target.value })}>
               <option value="">Todos los tipos</option>
               <option value="PAY">Carga útil</option>
               <option value="R/B">Cuerpo de cohete</option>
@@ -145,7 +158,7 @@ export default function Satcat() {
               onBlur={(e) => set({ owner: e.target.value.trim().toUpperCase() })}
               onKeyDown={(e) => e.key === "Enter" && set({ owner: e.currentTarget.value.trim().toUpperCase() })} />
           </Label>
-          <label className="flex items-end gap-2 pb-2 text-[11px] text-muted-foreground">
+          <label className="flex items-end gap-2 pb-2 text-[0.75rem] text-muted-foreground">
             <input type="checkbox" className="accent-blue-500" checked={get("incomplete") === "1"}
               onChange={(e) => set({ incomplete: e.target.checked ? "1" : null })} />
             Solo con parámetros incompletos
@@ -161,7 +174,7 @@ export default function Satcat() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <SortableHead field="object_name" sort={sort} order={order} onSort={onSort} className="pl-5">Objeto / NORAD</SortableHead>
+                  <SortableHead field="object_name" sort={sort} order={order} onSort={onSort} className="pl-5">Objeto / <abbr title={GLOSSARY.NORAD} className="cursor-help no-underline">NORAD</abbr></SortableHead>
                   <TableHead>Tipo / propietario</TableHead>
                   <SortableHead field="inclination_deg" sort={sort} order={order} onSort={onSort}>Órbita / inclinación</SortableHead>
                   <SortableHead field="apogee_km" sort={sort} order={order} onSort={onSort}>Apogeo / perigeo</SortableHead>
@@ -182,17 +195,17 @@ export default function Satcat() {
                         <IconTile icon={Satellite} />
                         <span className="min-w-0">
                           <span className="block max-w-56 truncate font-medium">{o.object_name ?? "—"}</span>
-                          <span className="block text-[10.5px] text-muted-foreground">NORAD {o.norad_cat_id} · {o.object_id ?? "—"}</span>
+                          <span className="block text-[0.75rem] text-muted-foreground">NORAD {o.norad_cat_id} · {o.object_id ?? "—"}</span>
                         </span>
                       </div>
                     </TableCell>
                     <TableCell><ObjectTypeLabel type={o.object_type} owner={o.owner_code} /></TableCell>
                     <TableCell>
                       <span className="block">{o.orbit_class ?? "—"}</span>
-                      <span className="tabular block text-[10.5px] text-muted-foreground">{o.inclination_deg != null ? `${formatNumber(o.inclination_deg, 2)}°` : "sin dato"}</span>
+                      <span className="tabular block text-[0.75rem] text-muted-foreground">{o.inclination_deg != null ? `${formatNumber(o.inclination_deg, 2)}°` : "sin dato"}</span>
                     </TableCell>
                     <TableCell className="tabular">
-                      {o.apogee_km != null ? <>{formatInt(o.apogee_km)} / {formatInt(o.perigee_km)} <span className="text-[10.5px] text-muted-foreground">km</span></> : (
+                      {o.apogee_km != null ? <>{formatInt(o.apogee_km)} / {formatInt(o.perigee_km)} <span className="text-[0.75rem] text-muted-foreground">km</span></> : (
                         <Badge variant="muted">Incompleto</Badge>
                       )}
                     </TableCell>
@@ -208,6 +221,9 @@ export default function Satcat() {
           </>
         )}
       </Card>
+      </>
+      )}
+      </TabPanel>
 
       <PageFooter />
       {selected != null && <SatelliteDetailPanel id={selected} onClose={() => set({ id: null })} />}

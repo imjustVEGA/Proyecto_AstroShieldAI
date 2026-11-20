@@ -1,5 +1,5 @@
 import { Globe2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { DetailPanel, ErrorState, FieldGrid, LoadingBlock, SectionLabel } from "@/components/common";
 import { ObjectTypeLabel, QUALITY_FLAG_LABEL, StateBadge } from "@/components/labels";
@@ -9,6 +9,7 @@ import { formatDate, formatInt, formatNumber } from "@/utils/format";
 
 export default function SatelliteDetailPanel({ id, onClose }) {
   const { data, error, isPending, refetch } = useSatcatDetail(id);
+  const onMap = useLocation().pathname === "/explorer";
 
   return (
     <DetailPanel
@@ -20,16 +21,16 @@ export default function SatelliteDetailPanel({ id, onClose }) {
       {error && <ErrorState error={error} onRetry={() => refetch()} />}
       {data && (
         <div className="flex flex-col gap-6">
-          <div className="flex flex-wrap items-center gap-3 text-[12px]">
+          <div className="flex flex-wrap items-center gap-3 text-[0.8125rem]">
             <ObjectTypeLabel type={data.object_type} />
             <StateBadge decayed={data.is_decayed} active={data.is_active} status={data.ops_status_code} />
             {data.orbit_class && <Badge variant="accent">{data.orbit_class}</Badge>}
           </div>
 
-          {data.orbit_center === "EA" && data.apogee_km != null && (
-            <Link to={`/explorer?id=${data.norad_cat_id}`}
-              className="flex items-center justify-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-[12px] text-blue-100 hover:bg-primary/20">
-              <Globe2 className="size-3.5" /> Ver órbita esquemática en el explorador
+          {!onMap && data.orbit_center === "EA" && data.apogee_km != null && (
+            <Link to={`/explorer?sel=s${data.norad_cat_id}`}
+              className="flex items-center justify-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-[0.8125rem] text-blue-100 hover:bg-primary/20">
+              <Globe2 className="size-3.5" /> Ver su órbita en el mapa 3D
             </Link>
           )}
 
@@ -56,13 +57,13 @@ export default function SatelliteDetailPanel({ id, onClose }) {
               ["RCS", data.rcs_m2 != null ? `${formatNumber(data.rcs_m2, 3)} m²` : "Sin dato"],
               ["Elementos orbitales", data.data_status_code ? data.labels.data_status_code : "Sin observaciones"],
             ]} />
-            <p className="mt-2 text-[11px] text-muted-foreground">SATCAT no incluye TLE/OMM: no es posible calcular la posición actual de este objeto.</p>
+            <p className="mt-2 text-[0.75rem] text-muted-foreground">SATCAT no incluye TLE/OMM: no es posible calcular la posición actual de este objeto.</p>
           </section>
 
           <section>
             <SectionLabel>Calidad del registro</SectionLabel>
             {data.quality_flags.length === 0 ? (
-              <p className="text-[12px] text-muted-foreground">Sin observaciones de calidad.</p>
+              <p className="text-[0.8125rem] text-muted-foreground">Sin observaciones de calidad.</p>
             ) : (
               <ul className="flex flex-wrap gap-1.5">
                 {data.quality_flags.map((f) => <Badge key={f} variant="muted" dot>{QUALITY_FLAG_LABEL[f] ?? f}</Badge>)}
@@ -70,7 +71,7 @@ export default function SatelliteDetailPanel({ id, onClose }) {
             )}
           </section>
 
-          <details className="rounded-md border p-3 text-[11px]">
+          <details className="rounded-md border p-3 text-[0.75rem]">
             <summary className="cursor-pointer text-muted-foreground">Registro original (fila {data.source_row_number} del CSV)</summary>
             <pre className="mt-2 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(data.raw_record, null, 2)}</pre>
           </details>

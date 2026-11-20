@@ -1,13 +1,17 @@
+import { Globe2 } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+
 import { DetailPanel, ErrorState, FieldGrid, LoadingBlock, SectionLabel } from "@/components/common";
 import { HazardBadge, QUALITY_FLAG_LABEL, TierBadge } from "@/components/labels";
 import { Badge } from "@/components/ui/primitives";
 import { useNeoDetail } from "@/hooks/queries";
-import { AU_KM, formatDiameterRange, formatInt, formatNumber } from "@/utils/format";
+import { AU_KM, formatApproach, formatDiameterRange, formatInt, formatNumber } from "@/utils/format";
 
 const COMPONENT_LABEL = { proximity: "Proximidad (45 %)", size: "Tamaño (35 %)", speed: "Velocidad (20 %)" };
 
 export default function NeoDetailPanel({ id, onClose }) {
   const { data, error, isPending, refetch } = useNeoDetail(id);
+  const onMap = useLocation().pathname === "/explorer";
 
   return (
     <DetailPanel title={data?.name ?? `NEO ${id}`} subtitle={`id de la fuente: ${id}`} onClose={onClose}>
@@ -19,13 +23,19 @@ export default function NeoDetailPanel({ id, onClose }) {
             <HazardBadge hazardous={data.is_hazardous} />
             <TierBadge tier={data.tier} />
           </div>
+          {!onMap && (
+            <Link to={`/explorer?sel=n${data.neo_id}`}
+              className="flex items-center justify-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-[0.8125rem] text-blue-100 hover:bg-primary/20">
+              <Globe2 className="size-3.5" /> Ver su distancia en el mapa 3D
+            </Link>
+          )}
           <section>
             <SectionLabel>Características físicas</SectionLabel>
             <FieldGrid items={[
               ["Magnitud absoluta (H)", formatNumber(data.absolute_magnitude_h, 2)],
               ["Diámetro estimado", formatDiameterRange(data.est_diameter_min_km, data.est_diameter_max_km)],
               ["Aproximaciones registradas", formatInt(data.observation_count)],
-              ["Distancia mínima", `${formatNumber(data.min_miss_distance_ld)} LD · ${formatNumber(data.min_miss_distance_km / 1e6, 2)} mill. km`],
+              ["Distancia mínima", `${formatApproach(data.min_miss_distance_km).ld} · ${formatApproach(data.min_miss_distance_km).km}`],
               ["Velocidad relativa máx.", `${formatNumber(data.max_relative_velocity_kms)} km/s`],
             ]} />
           </section>
@@ -42,14 +52,14 @@ export default function NeoDetailPanel({ id, onClose }) {
               </ul>
             )}
           </section>
-          <ul className="list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+          <ul className="list-disc space-y-1 pl-4 text-[0.75rem] text-muted-foreground">
             {data.notes.map((n) => <li key={n}>{n}</li>)}
             {data.quality_flags.map((f) => <li key={f}>Calidad: {QUALITY_FLAG_LABEL[f] ?? f}</li>)}
           </ul>
           <section>
             <SectionLabel>Aproximaciones (por distancia)</SectionLabel>
-            <table className="w-full text-[11.5px]">
-              <thead className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            <table className="w-full text-[0.75rem]">
+              <thead className="text-[0.6875rem] uppercase tracking-wider text-muted-foreground">
                 <tr>
                   <th className="py-1.5 text-left font-medium">Fila CSV</th>
                   <th className="py-1.5 text-right font-medium">LD</th>
@@ -68,7 +78,7 @@ export default function NeoDetailPanel({ id, onClose }) {
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-[10.5px] text-muted-foreground">
+            <p className="mt-2 text-[0.75rem] text-muted-foreground">
               La fuente no incluye fechas ni documenta la unidad de velocidad (se interpreta como km/h y se muestra en km/s).
             </p>
           </section>

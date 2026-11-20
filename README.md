@@ -73,16 +73,31 @@ docker compose run --rm backend python -m backend.train   # opcional: modelo de 
 
 | Ruta | Sección | Contenido |
 |---|---|---|
-| `/` | Dashboard | Indicadores reales, globo 3D con capas por altitud, "En el radar", gráficas |
-| `/explorer` | Explorador espacial | Órbita esquemática del objeto elegido (tamaño, forma e inclinación reales) |
-| `/neos` | Objetos NEO | Indicadores, 4 gráficas (dispersión distancia–diámetro), tabla con filtros y ficha |
-| `/satcat` | Catálogo SATCAT | Indicadores, 4 gráficas, tabla con filtros, orden y ficha completa |
-| `/risks` | Análisis de riesgos | Niveles A/B/C, objetos prioritarios, metodología y ranking |
+| `/` | Dashboard | Resumen en 4 preguntas (qué se monitorea, qué requiere atención, qué tan cerca pasan, qué hay en órbita), vista previa del mapa, "En el radar" y análisis |
+| `/explorer` | Mapa 3D | Elemento principal: buscador, categorías (NEO, satélites, cohetes, basura espacial, sin clasificar), selección de hasta 8 objetos, órbitas y distancias bajo demanda, ficha resumida y ficha técnica |
+| `/neos` | Objetos NEO | Pestañas *Vista general* (indicadores y catálogo con filtros) y *Análisis* (4 gráficas); ficha técnica por objeto |
+| `/satcat` | Catálogo SATCAT | Pestañas *Vista general* (indicadores y tabla con filtros) y *Análisis* (4 gráficas); ficha completa |
+| `/risks` | Análisis de riesgos | Pestañas *Resumen* (niveles A/B/C y objetos prioritarios) y *Metodología y ranking completo* |
 | `/estadisticas` | Estadísticas | Distribuciones orbitales, matrices tipo × estado, comparación NEO |
 | `/simulacion` | Simulación orbital | Órbita kepleriana en el globo (periodo, vis-viva, ocupación real de la capa) y clasificador de IA |
 | `/reportes` | Reportes | Vista previa y exportación CSV (ranking NEO, catálogo NEO, SATCAT) |
 | `/datos` | Fuentes de datos | Procedencia, SHA-256, unidades verificadas e incidencias de calidad |
+| `/configuracion` | Configuración | Accesibilidad, tema y filas por tabla |
 | `/usuarios` | Usuarios | Alta, edición y baja de cuentas (solo administradores) |
+
+El mapa guarda la selección en la URL (`/explorer?sel=s25544,n3542519&active=s25544`; `s` = NORAD de SATCAT,
+`n` = id de NEO), así que una vista se puede compartir o recargar. Los enlaces anteriores `/explorer?id=25544` siguen funcionando.
+
+### Accesibilidad
+
+Botón **Accesibilidad** en la barra superior (también en *Configuración*), con efecto en toda la aplicación y
+guardado en el navegador:
+
+- Tamaño del texto: normal, grande (112,5 %) y muy grande (125 %). Toda la tipografía y los espaciados están en `rem`.
+- Alto contraste: textos y bordes más marcados y foco amarillo.
+- Animaciones: según el sistema (`prefers-reduced-motion`), reducidas o completas.
+- Teclado: enlace "Saltar al contenido", foco visible, pestañas con flechas, `Escape` cierra paneles y en el mapa
+  las flechas giran la vista, `+`/`−` acercan o alejan y `0` vuelve a encuadrar.
 
 Búsqueda global en la barra superior (atajo **Ctrl K**).
 

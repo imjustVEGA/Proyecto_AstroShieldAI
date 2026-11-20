@@ -7,12 +7,74 @@
 /*
  * Identidad visual de AstroShield AI (portada de la carpeta Astroshield AI):
  * base casi negra azulada, paneles azul profundo, azul eléctrico y cian para detalles.
+ *
+ * Los colores son canales RGB en variables CSS (los lee tailwind.config.js).
+ * - Paleta estándar: textos secundarios con contraste ≥ 6:1 sobre los paneles.
+ * - `.hc` (alto contraste, panel de Accesibilidad): textos, bordes y foco más marcados.
+ * El tamaño del texto se controla con el font-size de <html> (100 %, 112,5 % o 125 %):
+ * toda la tipografía y los espaciados están en rem, así que la interfaz escala de forma pareja.
  */
 @layer base {
   :root {
     color-scheme: dark;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
+
+    --background: 6 10 19;
+    --foreground: 232 238 249;
+    --sidebar: 7 12 23;
+    --card: 11 17 32;
+    --popover: 13 21 38;
+    --primary: 59 130 246;
+    --secondary: 20 30 52;
+    --secondary-foreground: 211 220 236;
+    --muted: 15 23 41;
+    --muted-foreground: 146 160 188;
+    --accent: 56 189 248;
+    --border: 30 43 72;
+    --input: 42 57 92;
+    --ring: 96 165 250;
+
+    --status-good: 43 182 115;
+    --status-warning: 240 178 50;
+    --status-serious: 236 131 90;
+    --status-critical: 224 82 82;
+
+    /* Mismos valores que CATEGORY / OBJECT_TYPE_COLOR en components/labels.jsx. */
+    --cat-neo: 192 132 252;
+    --cat-pay: 57 135 229;
+    --cat-rb: 217 89 38;
+    --cat-deb: 25 158 112;
+    --cat-unk: 201 133 0;
+  }
+
+  /* Alto contraste: fondo negro, textos casi blancos, bordes visibles y foco amarillo. */
+  :root.hc {
+    --background: 0 0 0;
+    --foreground: 255 255 255;
+    --sidebar: 0 0 0;
+    --card: 8 12 22;
+    --popover: 10 15 28;
+    --primary: 96 165 250;
+    --secondary: 30 44 74;
+    --secondary-foreground: 240 244 252;
+    --muted: 18 26 44;
+    --muted-foreground: 206 216 234;
+    --accent: 125 211 252;
+    --border: 92 112 150;
+    --input: 120 140 180;
+    --ring: 250 204 21;
+
+    --status-good: 74 222 128;
+    --status-warning: 250 204 21;
+    --status-serious: 251 146 60;
+    --status-critical: 248 113 113;
+
+    --cat-neo: 216 180 254;
+    --cat-pay: 125 180 255;
+    --cat-rb: 251 146 60;
+    --cat-deb: 74 222 128;
+    --cat-unk: 250 204 21;
   }
 
   * {
@@ -30,6 +92,7 @@
     @apply bg-background font-sans text-foreground antialiased;
     min-width: 320px;
     margin: 0;
+    line-height: 1.5;
   }
 
   button,
@@ -39,17 +102,26 @@
     font: inherit;
   }
 
+  /* Foco visible en cualquier elemento navegable con teclado. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
+  :root.hc :focus-visible {
+    outline-width: 3px;
+  }
+
   ::selection {
     background: rgb(59 130 246 / 0.35);
   }
 
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #1a2540;
+    background: rgb(var(--input));
     border-radius: 8px;
   }
 }
@@ -61,7 +133,7 @@
 
   /* Etiqueta en versalitas espaciadas (eyebrow). */
   .eyebrow {
-    @apply text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground;
+    @apply text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground;
   }
 
   /* Fondo de campo estelar sutil para el visor orbital. */
@@ -78,52 +150,114 @@
   }
 
   .scrollbar-dark {
-    scrollbar-color: #1a2540 transparent;
+    scrollbar-color: rgb(var(--input)) transparent;
     scrollbar-width: thin;
   }
 }
 
-/* Tooltip de react-globe.gl con el estilo de la app. */
-.float-tooltip-kap {
-  background: rgb(13 21 38 / 0.92) !important;
-  border: 1px solid #162038;
-  border-radius: 6px !important;
-  color: #e8eef9 !important;
-  font: 500 12px Manrope, sans-serif !important;
-  padding: 6px 8px !important;
+/* Movimiento reducido: preferencia del sistema (salvo que el usuario active las animaciones) o elección manual. */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) *,
+  :root:not([data-motion="full"]) *::before,
+  :root:not([data-motion="full"]) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
-/* Marcador del perigeo en el globo (capa HTML de react-globe.gl). */
+/* Gráficas (Recharts): el texto también escala con el tamaño elegido en Accesibilidad. */
+.recharts-cartesian-axis-tick-value,
+.recharts-label {
+  font-size: 0.6875rem;
+}
+.recharts-legend-item-text {
+  font-size: 0.75rem;
+}
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  font-size: 0.8125rem;
+}
+:root.hc .recharts-cartesian-axis-tick-value {
+  fill: rgb(var(--muted-foreground));
+}
+
+/* Tooltip de react-globe.gl con el estilo de la app. */
+.float-tooltip-kap {
+  background: rgb(var(--popover) / 0.95) !important;
+  border: 1px solid rgb(var(--border));
+  border-radius: 6px !important;
+  color: rgb(var(--foreground)) !important;
+  font: 500 0.8125rem Manrope, sans-serif !important;
+  padding: 0.375rem 0.5rem !important;
+}
+
+/* Marcadores del globo (capa HTML de react-globe.gl): punto + etiqueta. */
 .astro-globe-marker {
+  --marker: 96 165 250;
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  transform: translate(-5px, -5px);
+  gap: 0.5rem;
+  transform: translate(-0.3125rem, -0.3125rem);
   pointer-events: none;
 }
+.astro-globe-marker.is-clickable {
+  pointer-events: auto;
+  cursor: pointer;
+}
 .astro-globe-marker .dot {
-  width: 10px;
-  height: 10px;
+  width: 0.625rem;
+  height: 0.625rem;
   flex-shrink: 0;
   border-radius: 9999px;
-  background: #e8f2ff;
-  box-shadow: 0 0 0 3px #3b82f6, 0 0 14px rgb(59 130 246 / 0.8);
+  background: #f1f6ff;
+  box-shadow: 0 0 0 3px rgb(var(--marker)), 0 0 14px rgb(var(--marker) / 0.8);
+}
+.astro-globe-marker.is-dimmed .dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: rgb(var(--marker));
+  box-shadow: 0 0 0 2px rgb(var(--marker) / 0.35);
+  opacity: 0.75;
+}
+/* Anillo de atención (NEO de prioridad alta o media): siempre acompañado de texto en la etiqueta. */
+.astro-globe-marker[data-attention="A"] .dot {
+  box-shadow: 0 0 0 3px rgb(var(--marker)), 0 0 0 6px rgb(var(--status-critical) / 0.9), 0 0 16px rgb(var(--status-critical) / 0.7);
+}
+.astro-globe-marker[data-attention="B"] .dot {
+  box-shadow: 0 0 0 3px rgb(var(--marker)), 0 0 0 6px rgb(var(--status-warning) / 0.85);
 }
 .astro-globe-marker .tag {
-  margin-top: -14px;
-  border: 1px solid #162038;
+  margin-top: -0.875rem;
+  border: 1px solid rgb(var(--border));
+  border-left: 3px solid rgb(var(--marker));
   border-radius: 6px;
-  background: rgb(11 17 32 / 0.88);
-  padding: 4px 8px;
+  background: rgb(var(--card) / 0.92);
+  padding: 0.25rem 0.5rem;
   white-space: nowrap;
-  color: #e8eef9;
-  font: 600 12px/1.25 Manrope, sans-serif;
+  color: rgb(var(--foreground));
+  font: 600 0.8125rem/1.25 Manrope, sans-serif;
 }
 .astro-globe-marker .tag small {
   display: block;
-  color: #8a99b4;
-  font-size: 10px;
+  color: rgb(var(--muted-foreground));
+  font-size: 0.6875rem;
   font-weight: 500;
+}
+.astro-globe-marker.is-reference .tag {
+  border-left-width: 1px;
+  background: rgb(var(--card) / 0.7);
+  font-weight: 500;
+  font-size: 0.6875rem;
+  color: rgb(var(--muted-foreground));
 }
 
 /* Planeta animado de la pantalla de acceso (usa la textura generada). */
@@ -146,4 +280,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .astro-planet { animation: none; }
+}
+:root[data-motion="reduce"] .astro-planet {
+  animation: none;
 }

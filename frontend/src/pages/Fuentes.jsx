@@ -53,7 +53,7 @@ function IssuesTable({ issues, samples }) {
               ))}
             </TableBody>
           </Table>
-          <p className="mt-2 text-[10.5px] text-muted-foreground">Se muestra una muestra de hasta 25 filas por tipo de incidencia.</p>
+          <p className="mt-2 text-[0.75rem] text-muted-foreground">Se muestra una muestra de hasta 25 filas por tipo de incidencia.</p>
         </>
       )}
     </div>
@@ -86,7 +86,7 @@ function SourceCard({ source }) {
             ["Filas con observaciones de calidad", formatInt(imp.rows_flagged)],
           ]} />
         ) : (
-          <p className="text-[12px] text-muted-foreground">
+          <p className="text-[0.8125rem] text-muted-foreground">
             Copia el archivo en <code className="rounded bg-muted px-1.5 py-0.5 text-xs">backend/data/{source.file_name}</code> y reinicia el backend.
             {imp?.error_message && <span className="mt-1 block text-red-300">{imp.error_message}</span>}
           </p>
@@ -95,9 +95,9 @@ function SourceCard({ source }) {
         {blanks.length > 0 && (
           <div>
             <h4 className="eyebrow mb-2">Celdas vacías en el archivo original</h4>
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            <ul className="grid gap-x-4 gap-y-1 text-[0.75rem] sm:grid-cols-2">
               {blanks.map(([col, n]) => (
-                <li key={col} className="flex justify-between"><span className="text-muted-foreground">{col}</span><span className="tabular">{formatInt(n)}</span></li>
+                <li key={col} className="flex min-w-0 justify-between gap-2"><span className="min-w-0 text-muted-foreground [overflow-wrap:anywhere]">{col}</span><span className="tabular">{formatInt(n)}</span></li>
               ))}
             </ul>
           </div>
@@ -143,9 +143,9 @@ export default function Fuentes() {
       </Notice>
       <Panel title="Configuración del cliente" className="mb-4">
         <FieldGrid items={[
-          ["URL de la API", <code key="api" className="text-[11px]">{API_BASE_URL}</code>],
+          ["URL de la API", <code key="api" className="text-[0.75rem]">{API_BASE_URL}</code>],
           ["Documentación OpenAPI", <a key="docs" className="text-blue-300 hover:underline" href={`${API_BASE_URL}/docs`} target="_blank" rel="noreferrer">{API_BASE_URL}/docs</a>],
-          ["Textura del globo", <code key="tex" className="text-[11px]">public/textures/tierra-astroshield.jpg (offline)</code>],
+          ["Textura del globo", <code key="tex" className="text-[0.75rem]">public/textures/tierra-astroshield.jpg (offline)</code>],
           ["Actualizar datos", "Reemplaza el CSV en backend/data y reinicia el backend"],
         ]} />
       </Panel>

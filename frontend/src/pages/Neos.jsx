@@ -1,5 +1,5 @@
 /** Objetos NEO: indicadores, 4 gráficas y catálogo con filtros y ficha (datos reales de NASA NeoWs). */
-import { Activity, AlertTriangle, ChevronRight, Ruler } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, ChevronRight, LayoutList, Ruler } from "lucide-react";
 import { Telescope } from "@/components/icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -8,19 +8,23 @@ import { DonutCard } from "@/components/charts/DonutCard";
 import { ScatterCard } from "@/components/charts/ScatterCard";
 import { CHART } from "@/components/charts/theme";
 import { ErrorState, IconTile, LoadingBlock, Notice, PageFooter, PageHeader, Pagination, StatCard } from "@/components/common";
-import { HazardBadge, TierBadge } from "@/components/labels";
+import { GLOSSARY, HazardBadge, TierBadge } from "@/components/labels";
 import SortableHead from "@/components/SortableHead";
 import TableToolbar from "@/components/TableToolbar";
 import {
-  Card, Input, Label, NativeSelect, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Card, InfoTip, Input, Label, NativeSelect, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TabPanel, Tabs,
 } from "@/components/ui/primitives";
 import NeoDetailPanel from "@/features/NeoDetailPanel";
 import { useNeoDistanceDiameter, useNeoList, useNeoStats } from "@/hooks/queries";
 import useDebounce from "@/hooks/useDebounce";
 import useUrlParams from "@/hooks/useUrlParams";
-import { formatBin, formatDiameterRange, formatInt, formatNumber, formatPercent, LUNAR_DISTANCE_KM } from "@/utils/format";
+import { formatApproach, formatBin, formatDiameterRange, formatInt, formatNumber, formatPercent, LUNAR_DISTANCE_KM } from "@/utils/format";
 
 const num = (v) => (v === "" ? undefined : Number(v));
+const VIEWS = [
+  { id: "general", label: "Vista general", icon: LayoutList, hint: "indicadores y catálogo" },
+  { id: "analisis", label: "Análisis", icon: BarChart3, hint: "gráficas y comparaciones" },
+];
 const ADVANCED = ["dmin", "dmax", "vmin", "ldmax"];
 
 /** Campo numérico que confirma el valor al salir o con Enter (evita una consulta por tecla). */
@@ -34,7 +38,7 @@ function NumberFilter({ label, value, onCommit, placeholder }) {
   );
 }
 
-function Overview() {
+function Overview({ part = "kpis" }) {
   const stats = useNeoStats();
   const scatter = useNeoDistanceDiameter();
   const view = useMemo(() => stats.data && {
@@ -56,11 +60,10 @@ function Overview() {
   if (!stats.data || !view) return <LoadingBlock className="h-72" />;
   const t = stats.data.totals;
 
-  return (
-    <>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  if (part === "kpis") return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="NEO registrados" value={t.objects} icon={Telescope} caption={`${formatInt(t.observations)} aproximaciones en el dataset`} />
-        <StatCard label="Clasificados como PHA" value={t.hazardous_objects} icon={AlertTriangle} tone="amber"
+        <StatCard label="Clasificados como PHA" value={t.hazardous_objects} icon={AlertTriangle} tone="amber" help={GLOSSARY.PHA}
           caption={`${formatPercent(t.hazardous_object_share)} de los objetos · criterio de la fuente`} />
         <StatCard label="Velocidad relativa mediana" value={`${formatNumber(t.median_velocity_kms, 1)} km/s`} icon={Activity} tone="teal"
           spark={stats.data.velocity_kms.map((b) => b.count)} sparkColor={CHART.series2}
@@ -68,9 +71,13 @@ function Overview() {
         <StatCard label="Diámetro máx. mediano" value={t.median_diameter_max_km != null ? `${formatInt(t.median_diameter_max_km * 1000)} m` : "—"}
           icon={Ruler} tone="violet" spark={stats.data.diameter_max_km.map((b) => b.count)} sparkColor={CHART.series3}
           caption="Estimado a partir de la magnitud H (albedo 0,05)" />
-      </div>
+    </div>
+  );
 
-      <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+  return (
+    <>
+      <p className="mb-3 text-[0.8125rem] text-muted-foreground">Cómo se distribuyen tamaño, velocidad y distancia de los asteroides del dataset.</p>
+      <div className="grid gap-4 md:grid-cols-2">
         <DonutCard title="Clasificación NEO" description="Objetos únicos por clasificación" slices={view.slices} centerLabel="PHA"
           help="La clasificación depende de la órbita (MOID ≤ 0,05 UA) y del brillo (H ≤ 22), no de cada aproximación." />
         <BarChartCard title="Diámetros estimados" description="Objetos por diámetro máx. (m)" data={view.diameter} color={CHART.series1} />
@@ -117,7 +124,8 @@ export default function Neos() {
       sort, order, page, page_size: 25,
     };
   }, [get, sort, order, page]);
-  const query = useNeoList(params);
+  const view = get("vista") === "analisis" ? "analisis" : "general";
+  const query = useNeoList(params, view === "general");
   const onSort = (s, o) => set({ sort: s, order: o });
 
   return (
@@ -127,31 +135,35 @@ export default function Neos() {
         Un registro por asteroide con todas sus aproximaciones. Los diámetros son estimaciones derivadas de H; la clasificación PHA es la de la fuente.
       </Notice>
 
-      <Overview />
+      <Tabs tabs={VIEWS} value={view} onChange={(v) => set({ vista: v === "general" ? null : v })} label="Nivel de detalle" idPrefix="neo-view" className="mb-4" />
+      <TabPanel id={view} idPrefix="neo-view">
+      {view === "analisis" ? <Overview part="charts" /> : (
+      <>
+      <Overview part="kpis" />
 
       <Card className="mt-4">
         <div className="flex items-start justify-between gap-3 px-5 pb-4 pt-5">
           <div>
-            <h3 className="text-[14px] font-semibold">Catálogo de objetos NEO</h3>
-            <p className="text-[10.5px] text-muted-foreground">Selecciona una fila para ver todas sus aproximaciones</p>
+            <h3 className="text-[0.9375rem] font-semibold">Catálogo de objetos NEO</h3>
+            <p className="text-[0.75rem] text-muted-foreground">Selecciona una fila para ver todas sus aproximaciones</p>
           </div>
-          <span className="rounded-[4px] border px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Dataset real</span>
+          <span className="rounded-[4px] border px-2 py-0.5 text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground">Dataset real</span>
         </div>
         <TableToolbar search={text} onSearch={setText} placeholder="Buscar nombre o identificador…"
           filtersOpen={filtersOpen} onToggleFilters={() => setFiltersOpen((v) => !v)}
           activeFilters={ADVANCED.filter((k) => get(k)).length} total={query.data?.total}
           select={
             <>
-              <NativeSelect aria-label="Clasificación" className="w-48" value={get("hazardous")} onChange={(e) => set({ hazardous: e.target.value })}>
+              <NativeSelect aria-label="Clasificación" className="w-auto" value={get("hazardous")} onChange={(e) => set({ hazardous: e.target.value })}>
                 <option value="">Todos</option>
                 <option value="true">Potencialmente peligrosos</option>
                 <option value="false">No peligrosos</option>
               </NativeSelect>
-              <NativeSelect aria-label="Prioridad" className="w-40" value={get("tier")} onChange={(e) => set({ tier: e.target.value })}>
-                <option value="">Toda prioridad</option>
-                <option value="A">Prioridad alta (A)</option>
-                <option value="B">Prioridad media (B)</option>
-                <option value="C">Prioridad baja (C)</option>
+              <NativeSelect aria-label="Nivel de atención" className="w-auto" value={get("tier")} onChange={(e) => set({ tier: e.target.value })}>
+                <option value="">Todo nivel de atención</option>
+                <option value="A">Atención alta (A)</option>
+                <option value="B">Atención media (B)</option>
+                <option value="C">Atención baja (C)</option>
               </NativeSelect>
             </>
           }>
@@ -175,8 +187,8 @@ export default function Neos() {
                   <SortableHead field="max_relative_velocity_kmh" sort={sort} order={order} onSort={onSort}>Velocidad máx.</SortableHead>
                   <SortableHead field="min_miss_distance_km" sort={sort} order={order} onSort={onSort}>Aproximación mín.</SortableHead>
                   <SortableHead field="observation_count" sort={sort} order={order} onSort={onSort}>Registros</SortableHead>
-                  <TableHead>Clasificación</TableHead>
-                  <TableHead>Prioridad</TableHead>
+                  <TableHead><span className="flex items-center gap-1">Clasificación <InfoTip>{GLOSSARY.PHA}</InfoTip></span></TableHead>
+                  <TableHead><span className="flex items-center gap-1">Atención <InfoTip align="end">Prioridad de revisión del sistema (A alta, B media, C baja). No es probabilidad de impacto.</InfoTip></span></TableHead>
                   <TableHead className="w-8" />
                 </TableRow>
               </TableHeader>
@@ -191,14 +203,14 @@ export default function Neos() {
                         <IconTile icon={Telescope} tone={n.is_hazardous ? "amber" : "blue"} />
                         <span>
                           <span className="block font-medium">{n.name}</span>
-                          <span className="block text-[10.5px] text-muted-foreground">NEO {n.neo_id} · H {formatNumber(n.absolute_magnitude_h, 1)}</span>
+                          <span className="block text-[0.75rem] text-muted-foreground">NEO {n.neo_id} · H {formatNumber(n.absolute_magnitude_h, 1)}</span>
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="tabular">{formatDiameterRange(n.est_diameter_min_km, n.est_diameter_max_km)}</TableCell>
-                    <TableCell className="tabular">{formatNumber(n.max_relative_velocity_kms, 1)} <span className="text-[10.5px] text-muted-foreground">km/s</span></TableCell>
+                    <TableCell className="tabular">{formatNumber(n.max_relative_velocity_kms, 1)} <span className="text-[0.75rem] text-muted-foreground">km/s</span></TableCell>
                     <TableCell className="tabular">
-                      {formatNumber(n.min_miss_distance_km / 1e6, 1)} <span className="text-[10.5px] text-muted-foreground">mill. km · {formatNumber(n.min_miss_distance_ld, 1)} LD</span>
+                      {formatApproach(n.min_miss_distance_km).ld} <span className="text-[0.75rem] text-muted-foreground">· {formatApproach(n.min_miss_distance_km).km}</span>
                     </TableCell>
                     <TableCell className="tabular">{formatInt(n.observation_count)}</TableCell>
                     <TableCell><HazardBadge hazardous={n.is_hazardous} /></TableCell>
@@ -213,6 +225,9 @@ export default function Neos() {
           </>
         )}
       </Card>
+      </>
+      )}
+      </TabPanel>
 
       <PageFooter note="LD = distancia lunar media (384.399 km). La velocidad no tiene unidad documentada en la fuente." />
       {selected != null && <NeoDetailPanel id={selected} onClose={() => set({ id: null })} />}

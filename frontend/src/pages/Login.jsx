@@ -57,21 +57,21 @@ export default function Login() {
             <Shield className="text-blue-300" size={20} strokeWidth={1.8} />
           </span>
           <div className="leading-tight">
-            <p className="text-[19px] font-bold tracking-tight">AstroShield<sup className="ml-0.5 text-[10px] font-semibold text-primary">AI</sup></p>
-            <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Space intelligence platform</p>
+            <p className="text-[1.1875rem] font-bold tracking-tight">AstroShield<sup className="ml-0.5 text-[0.6875rem] font-semibold text-primary">AI</sup></p>
+            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Space intelligence platform</p>
           </div>
         </div>
         <div className="relative flex items-center gap-10">
           <div className="max-w-md">
             <p className="eyebrow text-accent">Observatorio espacial</p>
             <h1 className="mt-5 text-5xl font-medium leading-tight tracking-tight">El espacio, en perspectiva<span className="text-primary">.</span></h1>
-            <p className="mt-5 text-[15px] leading-7 text-muted-foreground">
+            <p className="mt-5 text-[0.9375rem] leading-7 text-muted-foreground">
               70 587 objetos del catálogo SATCAT y 27 423 asteroides cercanos de NASA, analizados con reglas transparentes y un modelo de IA.
             </p>
           </div>
           <div className="astro-planet hidden shrink-0 xl:block" style={{ "--planet": "260px" }} role="img" aria-label="Planeta Tierra girando (textura AstroShield)" />
         </div>
-        <p className="relative text-[10px] uppercase tracking-[0.22em] text-muted-foreground">AstroShield AI · acceso seguro</p>
+        <p className="relative text-[0.6875rem] uppercase tracking-[0.22em] text-muted-foreground">AstroShield AI · acceso seguro</p>
       </motion.section>
 
       <motion.section

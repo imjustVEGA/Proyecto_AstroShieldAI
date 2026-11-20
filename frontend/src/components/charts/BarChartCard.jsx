@@ -1,6 +1,7 @@
 // Gráfica de barras en un panel, con alternativa en tabla (la identidad nunca depende solo del color).
 import { BarChart3, TableIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useRemPx } from "@/hooks/useElementSize";
 import {
   Bar,
   BarChart,
@@ -28,6 +29,8 @@ export function BarChartCard({
   valueLabel = "Objetos", valueDigits = 0, axisName, markLineAt, className,
 }) {
   const [asTable, setAsTable] = useState(false);
+  // Los textos de los ejes escalan con Accesibilidad (CSS en rem): los anchos reservados también.
+  const k = useRemPx() / 16;
 
   const { rows, allSeries, fmt, labelWidth } = useMemo(() => {
     const fmt = (v) => (valueDigits ? formatNumber(v, valueDigits) : formatInt(v));
@@ -39,7 +42,7 @@ export function BarChartCard({
       return row;
     });
     const longest = Math.max(0, ...categories.map((c) => String(c).length));
-    return { rows, allSeries, fmt, labelWidth: Math.min(150, Math.max(40, longest * 6.2)) };
+    return { rows, allSeries, fmt, labelWidth: Math.min(170, Math.max(40, longest * 6.6)) };
   }, [series, data, valueLabel, valueDigits, color]);
 
   const valueAxis = {
@@ -49,7 +52,7 @@ export function BarChartCard({
     domain: logScale ? [1, "auto"] : [0, "auto"],
     allowDataOverflow: logScale,
     tickFormatter: (v) => formatInt(v),
-    width: horizontal ? undefined : 48,
+    width: horizontal ? undefined : Math.round(52 * k),
   };
   const categoryAxis = {
     ...axisProps,
@@ -57,7 +60,7 @@ export function BarChartCard({
     dataKey: "label",
     interval: horizontal ? 0 : "preserveStartEnd",
     minTickGap: 4,
-    width: horizontal ? labelWidth : undefined,
+    width: horizontal ? Math.round(labelWidth * k) : undefined,
     label: axisName && !horizontal ? { value: axisName, position: "insideBottom", offset: -2, fill: CHART.muted, fontSize: 10 } : undefined,
   };
 
@@ -76,7 +79,7 @@ export function BarChartCard({
     >
       {asTable ? (
         <div className="overflow-auto scrollbar-dark" style={{ maxHeight: height }}>
-          <table className="w-full text-[11px]">
+          <table className="w-full text-[0.75rem]">
             <thead>
               <tr className="text-muted-foreground">
                 <th className="py-1 text-left font-medium">{axisName ?? "Categoría"}</th>

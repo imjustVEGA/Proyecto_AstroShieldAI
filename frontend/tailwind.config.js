@@ -3,24 +3,29 @@
  *
  * Paleta tomada de la carpeta Astroshield AI (wireframes): base casi negra azulada,
  * paneles azul profundo, azul eléctrico como acento principal y cian para detalles.
- * Los nombres `astro-*` se conservan para que las pantallas existentes de FER
- * (login, usuarios, configuración) adopten la misma identidad sin reescribirlas.
+ *
+ * Los colores se leen de variables CSS (canales RGB definidos en `src/index.css`) para que
+ * el modo de alto contraste de Accesibilidad cambie toda la interfaz a la vez.
+ * Los nombres `astro-*` se conservan para que las pantallas de FER (login, usuarios,
+ * configuración) adopten la misma identidad sin reescribirlas.
  */
+const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 const palette = {
-  background: "#060a13",
-  foreground: "#e8eef9",
-  sidebar: "#070c17",
-  card: "#0b1120",
-  popover: "#0d1526",
-  primary: "#3b82f6",
-  secondary: "#111a2e",
-  "secondary-foreground": "#c9d4e6",
-  muted: "#0f1729",
-  "muted-foreground": "#6f7e98",
-  accent: "#38bdf8",
-  border: "#162038",
-  input: "#1a2540",
-  ring: "#3b82f6",
+  background: v("background"),
+  foreground: v("foreground"),
+  sidebar: v("sidebar"),
+  card: v("card"),
+  popover: v("popover"),
+  primary: v("primary"),
+  secondary: v("secondary"),
+  "secondary-foreground": v("secondary-foreground"),
+  muted: v("muted"),
+  "muted-foreground": v("muted-foreground"),
+  accent: v("accent"),
+  border: v("border"),
+  input: v("input"),
+  ring: v("ring"),
 };
 
 export default {
@@ -29,17 +34,23 @@ export default {
     extend: {
       colors: {
         ...palette,
-        "status-good": "#2bb673",
-        "status-warning": "#f0b232",
-        "status-serious": "#ec835a",
-        "status-critical": "#e05252",
+        "status-good": v("status-good"),
+        "status-warning": v("status-warning"),
+        "status-serious": v("status-serious"),
+        "status-critical": v("status-critical"),
+        // Categorías del mapa 3D (mismo color en lista, leyenda, globo y fichas).
+        "cat-neo": v("cat-neo"),
+        "cat-pay": v("cat-pay"),
+        "cat-rb": v("cat-rb"),
+        "cat-deb": v("cat-deb"),
+        "cat-unk": v("cat-unk"),
         // Alias heredados de la versión FER.
         "astro-bg": palette.background,
         "astro-card": palette.card,
         "astro-blue": palette.primary,
         "astro-cyan": palette.accent,
-        "astro-orange": "#ec835a",
-        "astro-red": "#e05252",
+        "astro-orange": v("status-serious"),
+        "astro-red": v("status-critical"),
         "astro-text": palette.foreground,
         "astro-muted": palette["muted-foreground"],
       },

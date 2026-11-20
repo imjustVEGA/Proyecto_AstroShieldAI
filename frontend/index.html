@@ -7,6 +7,16 @@
     <meta name="theme-color" content="#060a13" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>AstroShield AI</title>
+    <script>
+      // Aplica las preferencias de accesibilidad guardadas antes de pintar (evita un parpadeo de tamaño o contraste).
+      try {
+        var a11y = JSON.parse(localStorage.getItem("astroshield_a11y") || "{}");
+        var scale = { large: "112.5%", xlarge: "125%" }[a11y.textSize];
+        if (scale) document.documentElement.style.fontSize = scale;
+        if (a11y.highContrast) document.documentElement.classList.add("hc");
+        if (a11y.motion === "reduce" || a11y.motion === "full") document.documentElement.dataset.motion = a11y.motion;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -22,12 +22,12 @@ export function DonutCard({ title, description, help, slices, centerLabel, heigh
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
           <span>
-            <span className="tabular block text-[20px] font-medium leading-none">{total ? formatPercent(first.value / total, 1) : "—"}</span>
+            <span className="tabular block text-[1.25rem] font-medium leading-none">{total ? formatPercent(first.value / total, 1) : "—"}</span>
             <span className="eyebrow">{centerLabel}</span>
           </span>
         </div>
       </div>
-      <ul className="mt-3 space-y-1 text-[11px]">
+      <ul className="mt-3 space-y-1 text-[0.75rem]">
         {slices.map((s) => (
           <li key={s.label} className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-1.5 text-secondary-foreground">

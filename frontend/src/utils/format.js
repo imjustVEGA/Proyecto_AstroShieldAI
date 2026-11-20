@@ -48,3 +48,12 @@ export function formatBin(start, end, unit = "", digits = 0) {
   if (end == null && start != null) return `≥ ${f(start)}${unit}`;
   return `${f(start ?? 0)}–${f(end ?? 0)}${unit}`;
 }
+
+/** Distancia de aproximación legible: en LD con decimales suficientes y en km o millones de km. */
+export function formatApproach(km) {
+  if (km == null) return "—";
+  const ld = km / LUNAR_DISTANCE_KM;
+  const ldText = `${formatNumber(ld, ld < 0.1 ? 3 : ld < 10 ? 2 : 1)} LD`;
+  const kmText = km < 1e6 ? `${formatInt(km)} km` : `${formatNumber(km / 1e6, 1)} mill. km`;
+  return { ld: ldText, km: kmText };
+}
