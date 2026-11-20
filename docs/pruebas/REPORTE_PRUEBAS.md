@@ -1,6 +1,6 @@
 # Reporte de pruebas · fusión Astroshield AI → FER
 
-Fecha: 19 de noviembre de 2026. Se probó el estado final de la carpeta `FER VERSION MIERDA`.
+Fecha: 19 de noviembre de 2026. Se probó el estado final de la carpeta `Astro-V-Final`.
 
 ## 1. Pruebas automáticas del backend (pytest) — 34/34 OK
 
